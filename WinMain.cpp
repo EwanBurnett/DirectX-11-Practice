@@ -54,6 +54,13 @@ int CALLBACK WinMain(
     //3. Show the window
     ShowWindow(hWnd, SW_SHOW);
 
-    while (true);
+
+    //4. Evaluate Messages
+    MSG msg; //An instance of the Windows API Message struct. See https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-msg
+    while (GetMessage(&msg, nullptr, 0, 0) > 0) { 
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+
     return 0;
 }
