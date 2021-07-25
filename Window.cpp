@@ -19,7 +19,7 @@ Window::WindowClass::WindowClass() :
     WNDCLASSEX wc = { 0 };
     wc.cbSize = sizeof(wc);
     wc.style = CS_OWNDC;
-    wc.lpfnWndProc = DefWindowProc;
+    wc.lpfnWndProc = MsgSetup;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = GetInstance();
@@ -100,10 +100,16 @@ LRESULT Window::MsgProcess(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    
+
     switch (msg) {
     case WM_CLOSE:                  //Windows messages are all macroed, so you don't need to remember each code. see https://wiki.winehq.org/List_Of_Windows_Messages
         PostQuitMessage(0);         //Tells our application to terminate execution with a custom exit code.
-        //return 0;
+        break;
+
+    case WM_KEYDOWN:
+        SetWindowText(hWnd, "Key Pressed.");
+        break;
     }
 
     return DefWindowProc(hWnd, msg, wParam, lParam);
