@@ -13,11 +13,18 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 	D3D_FEATURE_LEVEL featureLevel;
 
 	OutputDebugString(">> Creating D3D11 Device\n");
+
+	UINT createDeviceFlags = 0;
+
+#if defined(DEBUG) || defined (_DEBUG)
+	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
 	HRESULT hr = D3D11CreateDevice(
 		0,
 		D3D_DRIVER_TYPE_HARDWARE,
 		0,
-		D3D11_CREATE_DEVICE_DEBUG,
+		createDeviceFlags,
 		0,
 		0,
 		D3D11_SDK_VERSION,
@@ -28,11 +35,11 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 
 	if (FAILED(hr)) {
 		MessageBox(0, "D3D11 Device Creation Failed", 0, 0);
-		// return false;
+		return;
 	}
 	if (featureLevel != D3D_FEATURE_LEVEL_11_0) {
 		MessageBox(0, "DirectX 11 not supported by current hardware.", 0, 0);
-		// return false;
+		return;
 	}
 
 

@@ -76,6 +76,11 @@ Graphics& Window::Gfx()
     return(*mGfx);
 }
 
+GameTimer& Window::Timer()
+{
+    return(mTimer);
+}
+
 LRESULT Window::MsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     OutputDebugString(">> Setting up message handler\n");

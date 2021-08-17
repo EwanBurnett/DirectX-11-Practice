@@ -1,6 +1,7 @@
 #pragma once
 #include "KnightWin.h"
 #include "Graphics.h"
+#include "Timer.h"
 #include <memory>
 
 class Window {
@@ -26,7 +27,8 @@ public:
     ~Window();
 
     Graphics& Gfx();
-    
+    GameTimer& Timer();
+
 private:
     static LRESULT CALLBACK MsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     static LRESULT CALLBACK MsgProcess(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -36,4 +38,5 @@ private:
     int height;
     HWND hWnd;
     std::unique_ptr<Graphics> mGfx;
+    GameTimer mTimer;
 };
