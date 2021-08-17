@@ -1,5 +1,6 @@
 #pragma once
 #include "KnightWin.h"
+#include "Graphics.h"
 
 class Window {
 

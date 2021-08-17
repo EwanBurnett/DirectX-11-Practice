@@ -59,6 +59,9 @@ Window::Window(int width, int height, const char* name):
         nullptr, nullptr, WindowClass::GetInstance(), this
     );
 
+    //initialize graphics
+    Graphics g(hWnd, width, height);
+
     //Show the window
     ShowWindow(hWnd, SW_SHOWDEFAULT);
 }
@@ -103,7 +106,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     switch (msg) {
     case WM_CLOSE:                  //Windows messages are all macroed, so you don't need to remember each code. see https://wiki.winehq.org/List_Of_Windows_Messages
         PostQuitMessage(0);         //Tells our application to terminate execution with a custom exit code.
-        //return 0;
+        break;
     }
 
     return DefWindowProc(hWnd, msg, wParam, lParam);

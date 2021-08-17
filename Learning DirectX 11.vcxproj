@@ -159,6 +159,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DXMath.cpp" />
+    <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp">
       <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</MultiProcessorCompilation>
@@ -186,6 +188,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Graphics.h" />
     <ClInclude Include="KnightWin.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
