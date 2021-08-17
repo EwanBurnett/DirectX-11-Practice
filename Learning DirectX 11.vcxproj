@@ -159,7 +159,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DXMath.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp">

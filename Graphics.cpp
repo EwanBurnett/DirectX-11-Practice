@@ -3,16 +3,16 @@
 
 Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 {
+	OutputDebugString(">> Initializing Graphics...\n");
+
 	mClientWidth = width;
 	mClientHeight = height;
 	mEnable4xMSAA = true;
 
 	//D3D Device Creation
 	D3D_FEATURE_LEVEL featureLevel;
-	ID3D11Device* md3dDevice;
-	ID3D11DeviceContext* md3dImmediateContext;
 
-	/*
+	OutputDebugString(">> Creating D3D11 Device\n");
 	HRESULT hr = D3D11CreateDevice(
 		0,
 		D3D_DRIVER_TYPE_HARDWARE,
@@ -21,9 +21,9 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 		0,
 		0,
 		D3D11_SDK_VERSION,
-		&md3dDevice,
+		&pDevice,
 		&featureLevel,
-		&md3dImmediateContext
+		&pImmContext
 	);
 
 	if (FAILED(hr)) {
@@ -34,27 +34,15 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 		MessageBox(0, "DirectX 11 not supported by current hardware.", 0, 0);
 		// return false;
 	}
-	*/
 
-	D3D11CreateDevice(
-		0,
-		D3D_DRIVER_TYPE_HARDWARE,
-		0,
-		D3D11_CREATE_DEVICE_DEBUG,
-		0,
-		0,
-		D3D11_SDK_VERSION,
-		&md3dDevice,
-		&featureLevel,
-		&md3dImmediateContext
-	);
 
 	//Checking 4x Multisampling Antialiasing support
 	UINT m4xMSAAQuality;
-	md3dDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m4xMSAAQuality);
+	pDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m4xMSAAQuality);
 	if (m4xMSAAQuality <= 0) {
 		MessageBox(0, "4x MSAA not supported.", 0, 0);
 	}
+
 
 	//Initialising the Swap Chain
 	DXGI_MODE_DESC bd = { 0 }; //Buffer Desc 
@@ -83,9 +71,11 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 		sd.SampleDesc.Quality = 1;
 		sd.SampleDesc.Count = 0;
 	}
+
+
 	//Creating the Swapchain
 	IDXGIDevice* dxgiDevice = 0;
-	md3dDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice);
+	pDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice);
 
 	IDXGIAdapter* dxgiAdapter = 0;
 	dxgiDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&dxgiAdapter);
@@ -93,7 +83,7 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 	IDXGIFactory* dxgiFactory = 0;
 	dxgiAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&dxgiFactory);
 
-	//IDXGISwapChain* mSwapChain;
+	OutputDebugString(">> Creating Swapchain\n");
 	dxgiFactory->CreateSwapChain(dxgiDevice, &sd, &pSwap);
 
 	dxgiDevice->Release();
@@ -102,12 +92,12 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 
 
 	//Creating render target view
-	ID3D11RenderTargetView* mRenderTargetView;
 	ID3D11Texture2D* backBuffer;
 	pSwap->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer));
-	md3dDevice->CreateRenderTargetView(backBuffer, 0, &mRenderTargetView);
+	pDevice->CreateRenderTargetView(backBuffer, 0, &mRenderTargetView);
 	
 	backBuffer->Release();
+
 
 	//Creating Depth / Stencil buffer
 	D3D11_TEXTURE2D_DESC depthStencilDesc = { 0 };
@@ -130,28 +120,48 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
 	ID3D11Texture2D* mDepthStencilBuffer;
-	ID3D11DepthStencilView* mDepthStencilView;
+	
+	pDevice->CreateTexture2D(&depthStencilDesc, 0, &mDepthStencilBuffer);
+	pDevice->CreateDepthStencilView(mDepthStencilBuffer, 0, &mDepthStencilView);
 
-	md3dDevice->CreateTexture2D(&depthStencilDesc, 0, &mDepthStencilBuffer);
-	md3dDevice->CreateDepthStencilView(mDepthStencilBuffer, 0, &mDepthStencilView);
+	mDepthStencilBuffer->Release();
+	
 
 	//Binding views to Output Merger
-	md3dImmediateContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
+	OutputDebugString(">> Binding to Output Merger\n");
+	pImmContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
+
 
 	//Setting the Viewport
 	D3D11_VIEWPORT vp = { 0 };
 	vp.TopLeftX = 0.0f;
-	vp.TopLeftY = 0.0f;
+	vp.TopLeftY = 00.0f;
 	vp.Width = static_cast<float>(mClientWidth);
 	vp.Height = static_cast<float>(mClientHeight);
 	vp.MinDepth = 0.0f;
 	vp.MaxDepth = 1.0f;
 
-	md3dImmediateContext->RSSetViewports(1, &vp);
-	pSwap->Present(1,0);
+	pImmContext->RSSetViewports(1, &vp);
+	OutputDebugString(">> Graphics initialization complete\n");
 }
 
-void Graphics::Update()
+Graphics::~Graphics()
 {
-	pSwap->Present(0, 0);
+	//Releasing global COM interfaces
+	pDevice->Release();
+	pSwap->Release();
+	pImmContext->Release();
+	mRenderTargetView->Release();
+	mDepthStencilView->Release();
+}
+
+void Graphics::EndFrame()
+{
+	pSwap->Present(1u, 0);
+}
+
+void Graphics::ClearBuffer(float r, float g, float b, float a)
+{
+	const float colour[] = { r, g, b, a };
+	pImmContext->ClearRenderTargetView(mRenderTargetView, colour);
 }
