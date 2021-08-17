@@ -110,6 +110,8 @@ LRESULT Window::MsgProcess(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    
+
     switch (msg) {
     case WM_CLOSE:                  //Windows messages are all macroed, so you don't need to remember each code. see https://wiki.winehq.org/List_Of_Windows_Messages
         PostQuitMessage(0xD3D11);         //Tells our application to terminate execution with a custom exit code.
