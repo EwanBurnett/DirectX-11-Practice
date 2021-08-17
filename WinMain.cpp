@@ -63,7 +63,7 @@ void Update()
     double r, g, b;
     float a = mWnd->Timer().GameTime();
     r = (cos( mWnd->Timer().GameTime()) + 1) / 2;
-    g = (sin( mWnd->Timer().GameTime()) + 1) / 2;
+    g = (tan( mWnd->Timer().GameTime()) + 1) / 2;
     b = (sin( mWnd->Timer().GameTime()) + 1) / 2;
 
     mWnd->Gfx().ClearBuffer(r, g, b);
