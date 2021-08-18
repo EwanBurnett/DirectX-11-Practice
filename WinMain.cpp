@@ -45,11 +45,11 @@ void DoFrame()
 {
     //Tick Timer
     mWnd->Timer().Tick();
-        
+
     //Process if timer is unpaused
-    if ((mWnd->Timer().IsPaused()) == false) {
-        mWnd->Gfx().ClearBuffer(0.5, 0.2, 0.5);
+    if ((mWnd->Timer().IsPaused()) == false){
         Update();
+        mWnd->Gfx().DrawFrame();
         mWnd->Gfx().EndFrame();
     }
     else {
