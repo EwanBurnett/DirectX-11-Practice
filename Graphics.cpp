@@ -1,5 +1,10 @@
 #include "Graphics.h"
+#include <d3dcompiler.h>
+
 #pragma comment(lib,"d3d11.lib")
+#pragma comment(lib, "D3DCompiler.lib")
+
+using namespace DirectX;
 
 Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 {
@@ -149,6 +154,7 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 	vp.MaxDepth = 1.0f;
 
 	pImmContext->RSSetViewports(1, &vp);
+	Init();
 	OutputDebugString(">> Graphics initialization complete\n");
 }
 
@@ -160,6 +166,66 @@ Graphics::~Graphics()
 	pImmContext->Release();
 	mRenderTargetView->Release();
 	mDepthStencilView->Release();
+}
+
+void Graphics::Init()
+{
+	OutputDebugString(">> Creating Vertex Buffer\n");
+
+	//Creating a Vertex Buffer
+	//Vertex struct 
+	struct Vertex1 {
+		XMFLOAT3 pos;
+		XMFLOAT4 color;
+	};
+
+	//Fill out vertex desc with the semantics and formats used in our vertex struct
+	D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+	};
+
+	//Raw vertex data
+	Vertex1 verts[] =
+	{
+		{XMFLOAT3(-1, -1, 0), XMFLOAT4(0.8, 0.5, 0.5, 1)},
+		{XMFLOAT3(0, 1, 0), XMFLOAT4(0.2, 0.7, 0.3, 1)},
+		{XMFLOAT3(1, -1, 0), XMFLOAT4(0.4, 0.1, 0.9, 1)}
+	};
+
+	//Fill Vertex buffer description
+	D3D11_BUFFER_DESC vbd = { 0 };
+	vbd.ByteWidth = sizeof(verts);
+	vbd.Usage = D3D11_USAGE_DEFAULT;
+	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vbd.CPUAccessFlags = 0;
+	vbd.MiscFlags = 0;
+	vbd.StructureByteStride = sizeof(Vertex1);
+
+	//Initialize the subresource with our verts
+	D3D11_SUBRESOURCE_DATA vInitData;
+	vInitData.pSysMem = verts;
+
+	//Create the vertex buffer
+	ID3D11Buffer* mVB;
+	pDevice->CreateBuffer(&vbd, &vInitData, &mVB);
+
+	//Bind the vertex buffer to an input slot of the device
+	UINT strides = sizeof(Vertex1);
+	UINT offset = 0;
+	pImmContext->IAGetVertexBuffers(0, 1, &mVB, &strides, &offset);
+
+	OutputDebugString(">> Vertex Buffer Created\n");
+	
+
+	//Creating an Index buffer
+
+
+}
+
+void Graphics::DrawFrame()
+{
 }
 
 void Graphics::EndFrame()
