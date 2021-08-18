@@ -48,7 +48,7 @@ void DoFrame()
     
     //Process if timer is unpaused
     if ((mWnd->Timer().IsPaused()) == false) {
-        mWnd->Gfx().ClearBuffer(0.5, 0.2, 0.5);
+        mWnd->Gfx().DrawFrame();
         Update();
         mWnd->Gfx().EndFrame();
     }

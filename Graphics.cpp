@@ -1,5 +1,6 @@
 #include "Graphics.h"
 #include <d3dcompiler.h>
+#include <string>
 
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
@@ -129,31 +130,12 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 	
 	pDevice->CreateTexture2D(&depthStencilDesc, 0, &mDepthStencilBuffer);
 	pDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), 0, &mDepthStencilView);
-	
-	//Binding views to Output Merger
-	OutputDebugString(">> Binding to Output Merger\n");
-	pImmContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), mDepthStencilView.Get());
-
-	
-	//Setting the Viewport
-	D3D11_VIEWPORT vp = { 0 };
-	vp.TopLeftX = 0.0f;
-	vp.TopLeftY = 0.0f;
-	vp.Width = static_cast<float>(mClientWidth);
-	vp.Height = static_cast<float>(mClientHeight);
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-
-	pImmContext->RSSetViewports(1, &vp);
-	
-	//Run any initialization code
-	Init();
 
 	OutputDebugString(">> Graphics initialization complete\n");
 }
 
 
-void Graphics::Init()
+void Graphics::DrawShape()
 {
 	OutputDebugString(">> Creating Vertex Buffer\n");
 
@@ -164,24 +146,25 @@ void Graphics::Init()
 		XMFLOAT4 color;
 	};
 	
-	//Raw vertex data (Hexagon)
+	////Raw vertex data (Hexagon)
+	//Vertex1 verts[] =
+	//{
+	//	{XMFLOAT3(0, 0, 0.2), XMFLOAT4(0.8, 0.5, 0.5, 1)},
+	//	{XMFLOAT3(0.5, 1, 0.2), XMFLOAT4(0.2, 0.7, 0.3, 1)},
+	//	{XMFLOAT3(1, 0, 0.2), XMFLOAT4(0.4, 0.1, 0.9, 1)},
+	//	{XMFLOAT3(0.5, -1, 0.2), XMFLOAT4(0.6, 0.3, 0.1, 1)},
+	//	{XMFLOAT3(-0.5, -1, 0.3), XMFLOAT4(0.9, 0.4, 0.4, 1)},
+	//	{XMFLOAT3(-1, 0, 0.2), XMFLOAT4(0.3, 0.5, 0.5, 1)},
+	//	{XMFLOAT3(-0.5, 0, 0.2), XMFLOAT4(0.3, 0.8, 0.55, 1)}
+	//};
+
 	Vertex1 verts[] =
 	{
-		{XMFLOAT3(0, 0, 1), XMFLOAT4(0.8, 0.5, 0.5, 1)},
-		{XMFLOAT3(0.5, 1, 1), XMFLOAT4(0.2, 0.7, 0.3, 1)},
-		{XMFLOAT3(1, 0, 1), XMFLOAT4(0.4, 0.1, 0.9, 1)},
-		{XMFLOAT3(0.5, -1, 1), XMFLOAT4(0.6, 0.3, 0.1, 1)},
-		{XMFLOAT3(-0.5, -1, 1), XMFLOAT4(0.9, 0.4, 0.4, 1)},
-		{XMFLOAT3(-1, 0, 1), XMFLOAT4(0.3, 0.5, 0.5, 1)},
-		{XMFLOAT3(-0.5, 0, 1), XMFLOAT4(0.3, 0.8, 0.55, 1)}
+		{XMFLOAT3(0, 0.5, 0), XMFLOAT4(1, 1, 1, 1)},
+		{XMFLOAT3(0.5, -0.5, 0), XMFLOAT4(1, 1, 1, 1)},
+		{XMFLOAT3(-0.5, -0.5, 0), XMFLOAT4(1, 1, 1, 1)}
 	};
 
-	//Fill out vertex desc with the semantics and formats used in our vertex struct
-	D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0}
-	};
 
 	//Fill Vertex buffer description
 	D3D11_BUFFER_DESC vbd = { 0 };
@@ -264,60 +247,72 @@ void Graphics::Init()
 	pDevice->CreateRasterizerState(&rd, &mRS);
 	pImmContext->RSSetState(mRS.Get());
 
-	//Shaders
-	wrl::ComPtr<ID3DBlob> pVsBlob;
-	wrl::ComPtr<ID3DBlob> pPsBlob;
 
-	////Compile our shaders
-	//D3DCompileFromFile(L"PixelShader.hlsl", 0, 0, 0, "cs_5_0", D3DCOMPILE_DEBUG, 0, &pPsBlob, nullptr);
-	//D3DCompileFromFile(L"VertexShader.hlsl", 0, 0, 0, "cs_5_0", D3DCOMPILE_DEBUG, 0, &pVsBlob, nullptr);
-		
+	//Shaders
+	wrl::ComPtr<ID3DBlob> pBlob;
+
 	//Loading our pixel shader, and binding it to the pipeline
 	wrl::ComPtr<ID3D11PixelShader> pPixelShader;
-	D3DReadFileToBlob(L"PixelShader.cso", &pPsBlob);
+	D3DReadFileToBlob(L"PixelShader.cso", &pBlob);
 
-	pDevice->CreatePixelShader(pPsBlob->GetBufferPointer(), pPsBlob->GetBufferSize(), nullptr, &pPixelShader);
+	pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader);
 	pImmContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
 
 	//Loading our vertex shader, and binding it to the pipeline
 	wrl::ComPtr<ID3D11VertexShader> pVertexShader;
-	D3DReadFileToBlob(L"VertexShader.cso", &pVsBlob);
+	D3DReadFileToBlob(L"VertexShader.cso", &pBlob);
 	
+	//Fill out vertex desc with the semantics and formats used in our vertex struct
+	D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0}
+	};
 
 	//Set the input layout on the device
 	wrl::ComPtr<ID3D11InputLayout> pInputLayout;
-	pDevice->CreateInputLayout(vertexDesc, 2, pVsBlob->GetBufferPointer(), pVsBlob->GetBufferSize(), &pInputLayout);
+	pDevice->CreateInputLayout(vertexDesc, (UINT)std::size(vertexDesc), pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &pInputLayout);
 	pImmContext->IASetInputLayout(pInputLayout.Get());
 
 	//Bind the vertex shader
-	pDevice->CreateVertexShader(pVsBlob->GetBufferPointer(), pVsBlob->GetBufferSize(), nullptr, &pVertexShader);
+	pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader);
 	pImmContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
 
+	//Binding views to Output Merger
+	OutputDebugString(">> Binding to Output Merger\n");
+	pImmContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), mDepthStencilView.Get());
 
-	
+	//Setting the Viewport
+	D3D11_VIEWPORT vp = { };
+	vp.TopLeftX = 0.0f;
+	vp.TopLeftY = 0.0f;
+	vp.Width = static_cast<float>(mClientWidth);
+	vp.Height = static_cast<float>(mClientHeight);
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+
+	pImmContext->RSSetViewports(1, &vp);
+
 	//Set primitive topology 
 	pImmContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	
-	//pImmContext->Draw(18, 0);
+	//Draw the shape
+	pImmContext->Draw((UINT)std::size(verts), 0);
 }
 
 void Graphics::DrawFrame()
 {
-	Init();
-	pImmContext->Draw(6, 0);
-	//pImmContext->DrawIndexed(18, 0, 0);
+	DrawShape();
+	OutputDebugString(">> Drawn to screen\n");
 }
 
 void Graphics::EndFrame()
 {
-	DrawFrame();
 	pSwap->Present(1u, 0);
 }
 
 void Graphics::ClearBuffer(float r, float g, float b, float a)
 {
 	const float colour[] = { r, g, b, a };
-	//const float colour[] = { 0, 0, 0 ,1 };
 	pImmContext->ClearRenderTargetView(mRenderTargetView.Get(), colour);
 }

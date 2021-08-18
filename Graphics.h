@@ -13,7 +13,7 @@ public:
 	Graphics(HWND hWnd, UINT width, UINT height);
 	~Graphics() = default;
 
-	void Init();
+	void DrawShape();
 	void DrawFrame();
 	void EndFrame();
 	void ClearBuffer(float r, float g, float b, float a = 1.0f);
