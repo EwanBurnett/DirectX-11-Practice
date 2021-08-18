@@ -50,10 +50,10 @@ void VectorDemo() {
 	Vector2 p = { 12.3, 15.6 };
 	Vector2 g = { 4.3, 8.1 };
 	cout << "\n5. Vector Projection\nProjection calculates how much of a vector acts in the direction of another. Think of it like shining a light onto the vector." << endl;
-	cout << "Proj v (n) = ((v . n) / ||n||^2)n " << endl;
-	cout << "Vector p = " << p << endl;
-	cout << "Vector g = " << g << endl;
-	cout << "Proj p (g) = " << VectorProject(p, g) << endl;
+	cout << "\tProj v (n) = ((v . n) / ||n||^2)n " << endl;
+	cout << "\tVector p = " << p << endl;
+	cout << "\tVector g = " << g << endl;
+	cout << "\tProj p (g) = " << VectorProject(p, g) << endl;
 
 	cout << "\n\n";
 }
