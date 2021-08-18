@@ -66,6 +66,6 @@ void Update()
     g = (sin( mWnd->Timer().GameTime()) + 1) / 2;
     b = (sin( mWnd->Timer().GameTime()) + 1) / 2;
 
-    //mWnd->Gfx().ClearBuffer(r, g, b);
+    mWnd->Gfx().ClearBuffer(r, g, b);
 
 }

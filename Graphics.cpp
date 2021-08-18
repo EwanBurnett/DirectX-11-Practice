@@ -6,6 +6,7 @@
 
 using namespace DirectX;
 
+
 Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 {
 	OutputDebugString(">> Initializing Graphics...\n");
@@ -24,7 +25,6 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 #if defined(DEBUG) || defined (_DEBUG)
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
-
 	HRESULT hr = D3D11CreateDevice(
 		0,
 		D3D_DRIVER_TYPE_HARDWARE,
@@ -86,29 +86,23 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 
 
 	//Creating the Swapchain
-	IDXGIDevice* dxgiDevice = 0;
+	wrl::ComPtr<IDXGIDevice> dxgiDevice = 0;
 	pDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice);
 
-	IDXGIAdapter* dxgiAdapter = 0;
+	wrl::ComPtr<IDXGIAdapter> dxgiAdapter = 0;
 	dxgiDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&dxgiAdapter);
 
-	IDXGIFactory* dxgiFactory = 0;
+	wrl::ComPtr<IDXGIFactory> dxgiFactory = 0;
 	dxgiAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&dxgiFactory);
 
 	OutputDebugString(">> Creating Swapchain\n");
-	dxgiFactory->CreateSwapChain(dxgiDevice, &sd, &pSwap);
-
-	dxgiDevice->Release();
-	dxgiAdapter->Release();
-	dxgiFactory->Release();
+	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &sd, &pSwap);
 
 
 	//Creating render target view
-	ID3D11Texture2D* backBuffer;
-	pSwap->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer));
-	pDevice->CreateRenderTargetView(backBuffer, 0, &mRenderTargetView);
-	
-	backBuffer->Release();
+	wrl::ComPtr<ID3D11Texture2D> backBuffer;
+	pSwap->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBuffer);
+	pDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, &mRenderTargetView);
 
 
 	//Creating Depth / Stencil buffer
@@ -131,20 +125,16 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
 	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
-	ID3D11Texture2D* mDepthStencilBuffer;
+	wrl::ComPtr<ID3D11Texture2D> mDepthStencilBuffer;
 	
 	pDevice->CreateTexture2D(&depthStencilDesc, 0, &mDepthStencilBuffer);
-	pDevice->CreateDepthStencilView(mDepthStencilBuffer, 0, &mDepthStencilView);
-
-	mDepthStencilBuffer->Release();
+	pDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), 0, &mDepthStencilView);
 	
-
 	//Binding views to Output Merger
 	OutputDebugString(">> Binding to Output Merger\n");
-	pImmContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
+	pImmContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), mDepthStencilView.Get());
 
 	
-
 	//Setting the Viewport
 	D3D11_VIEWPORT vp = { 0 };
 	vp.TopLeftX = 0.0f;
@@ -162,15 +152,6 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 	OutputDebugString(">> Graphics initialization complete\n");
 }
 
-Graphics::~Graphics()
-{
-	//Releasing global COM interfaces
-	pDevice->Release();
-	pSwap->Release();
-	pImmContext->Release();
-	mRenderTargetView->Release();
-	mDepthStencilView->Release();
-}
 
 void Graphics::Init()
 {
@@ -216,13 +197,13 @@ void Graphics::Init()
 	vInitData.pSysMem = verts;
 
 	//Create the vertex buffer
-	ID3D11Buffer* mVB;
+	wrl::ComPtr<ID3D11Buffer> mVB;
 	pDevice->CreateBuffer(&vbd, &vInitData, &mVB);
 
 	//Bind the vertex buffer to an input slot of the device
 	UINT strides = sizeof(Vertex1);
 	UINT offset = 0;
-	pImmContext->IAGetVertexBuffers(0, 1, &mVB, &strides, &offset);
+	pImmContext->IASetVertexBuffers(0, 1, mVB.GetAddressOf(), &strides, &offset);
 
 	OutputDebugString(">> Vertex Buffer Bound to pipeline\n");
 	
@@ -254,11 +235,11 @@ void Graphics::Init()
 	iInitData.pSysMem = indices;
 
 	//Create the buffer
-	ID3D11Buffer* mIB;
+	wrl::ComPtr<ID3D11Buffer> mIB;
 	pDevice->CreateBuffer(&ibd, &iInitData, &mIB);
 
 	//Bind the buffer to the pipeline
-	pImmContext->IASetIndexBuffer(mIB, DXGI_FORMAT_R32_UINT, 0);
+	pImmContext->IASetIndexBuffer(mIB.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 	OutputDebugString(">> Index Buffer Bound to pipeline\n");
 	//pImmContext->DrawIndexed(18, 0, 0);
@@ -279,38 +260,38 @@ void Graphics::Init()
 	rd.AntialiasedLineEnable = false;
 
 
-	ID3D11RasterizerState* mRS;
+	wrl::ComPtr<ID3D11RasterizerState> mRS;
 	pDevice->CreateRasterizerState(&rd, &mRS);
-	pImmContext->RSSetState(mRS);
+	pImmContext->RSSetState(mRS.Get());
 
 	//Shaders
-	ID3DBlob* pVsBlob;
-	ID3DBlob* pPsBlob;
+	wrl::ComPtr<ID3DBlob> pVsBlob;
+	wrl::ComPtr<ID3DBlob> pPsBlob;
 
 	////Compile our shaders
 	//D3DCompileFromFile(L"PixelShader.hlsl", 0, 0, 0, "cs_5_0", D3DCOMPILE_DEBUG, 0, &pPsBlob, nullptr);
 	//D3DCompileFromFile(L"VertexShader.hlsl", 0, 0, 0, "cs_5_0", D3DCOMPILE_DEBUG, 0, &pVsBlob, nullptr);
 		
 	//Loading our pixel shader, and binding it to the pipeline
-	ID3D11PixelShader* pPixelShader;
+	wrl::ComPtr<ID3D11PixelShader> pPixelShader;
 	D3DReadFileToBlob(L"PixelShader.cso", &pPsBlob);
 
 	pDevice->CreatePixelShader(pPsBlob->GetBufferPointer(), pPsBlob->GetBufferSize(), nullptr, &pPixelShader);
-	pImmContext->PSSetShader(pPixelShader, nullptr, 0);
+	pImmContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
 
 	//Loading our vertex shader, and binding it to the pipeline
-	ID3D11VertexShader* pVertexShader;
+	wrl::ComPtr<ID3D11VertexShader> pVertexShader;
 	D3DReadFileToBlob(L"VertexShader.cso", &pVsBlob);
 	
 
 	//Set the input layout on the device
-	ID3D11InputLayout* pInputLayout;
+	wrl::ComPtr<ID3D11InputLayout> pInputLayout;
 	pDevice->CreateInputLayout(vertexDesc, 2, pVsBlob->GetBufferPointer(), pVsBlob->GetBufferSize(), &pInputLayout);
-	pImmContext->IASetInputLayout(pInputLayout);
+	pImmContext->IASetInputLayout(pInputLayout.Get());
 
 	//Bind the vertex shader
 	pDevice->CreateVertexShader(pVsBlob->GetBufferPointer(), pVsBlob->GetBufferSize(), nullptr, &pVertexShader);
-	pImmContext->VSSetShader(pVertexShader, nullptr, 0);
+	pImmContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
 
 
 	
@@ -323,8 +304,9 @@ void Graphics::Init()
 
 void Graphics::DrawFrame()
 {
-	//pImmContext->Draw(6, 0);
-	pImmContext->DrawIndexed(18, 0, 0);
+	Init();
+	pImmContext->Draw(6, 0);
+	//pImmContext->DrawIndexed(18, 0, 0);
 }
 
 void Graphics::EndFrame()
@@ -337,5 +319,5 @@ void Graphics::ClearBuffer(float r, float g, float b, float a)
 {
 	const float colour[] = { r, g, b, a };
 	//const float colour[] = { 0, 0, 0 ,1 };
-	pImmContext->ClearRenderTargetView(mRenderTargetView, colour);
+	pImmContext->ClearRenderTargetView(mRenderTargetView.Get(), colour);
 }
