@@ -45,7 +45,7 @@ void DoFrame()
 {
     //Tick Timer
     mWnd->Timer().Tick();
-        
+    
     //Process if timer is unpaused
     if ((mWnd->Timer().IsPaused()) == false) {
         mWnd->Gfx().ClearBuffer(0.5, 0.2, 0.5);
@@ -66,6 +66,6 @@ void Update()
     g = (sin( mWnd->Timer().GameTime()) + 1) / 2;
     b = (sin( mWnd->Timer().GameTime()) + 1) / 2;
 
-    mWnd->Gfx().ClearBuffer(r, g, b);
+    //mWnd->Gfx().ClearBuffer(r, g, b);
 
 }
