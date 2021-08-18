@@ -160,9 +160,9 @@ void Graphics::DrawShape()
 
 	Vertex1 verts[] =
 	{
-		{XMFLOAT3(0, 0.5, 0), XMFLOAT4(1, 1, 1, 1)},
-		{XMFLOAT3(0.5, -0.5, 0), XMFLOAT4(1, 1, 1, 1)},
-		{XMFLOAT3(-0.5, -0.5, 0), XMFLOAT4(1, 1, 1, 1)}
+		{XMFLOAT3(0, 0.5, 0), XMFLOAT4(0.8, 0.5, 0.5, 1)},
+		{XMFLOAT3(0.5, -0.5, 0), XMFLOAT4(0.4, 0.1, 0.9, 1)},
+		{XMFLOAT3(-0.5, -0.5, 0), XMFLOAT4(0.3, 0.8, 0.55, 1)}
 	};
 
 
@@ -207,7 +207,7 @@ void Graphics::DrawShape()
 	//Creating an index buffer Description
 	D3D11_BUFFER_DESC ibd;
 	ibd.Usage = D3D11_USAGE_DEFAULT;
-	ibd.ByteWidth = sizeof(UINT) * 18;
+	ibd.ByteWidth = sizeof(UINT) * std::size(indices);
 	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	ibd.CPUAccessFlags = 0;
 	ibd.MiscFlags = 0;
@@ -280,7 +280,7 @@ void Graphics::DrawShape()
 
 	//Binding views to Output Merger
 	OutputDebugString(">> Binding to Output Merger\n");
-	pImmContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), mDepthStencilView.Get());
+	pImmContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), nullptr); //mDepthStencilView.Get()
 
 	//Setting the Viewport
 	D3D11_VIEWPORT vp = { };
@@ -298,6 +298,7 @@ void Graphics::DrawShape()
 
 	//Draw the shape
 	pImmContext->Draw((UINT)std::size(verts), 0);
+	//pImmContext->DrawIndexed(18, 0, 0);
 }
 
 void Graphics::DrawFrame()
@@ -313,6 +314,7 @@ void Graphics::EndFrame()
 
 void Graphics::ClearBuffer(float r, float g, float b, float a)
 {
+	//pImmContext->ClearDepthStencilView(mDepthStencilView.Get(), 0, 1, 0);
 	const float colour[] = { r, g, b, a };
 	pImmContext->ClearRenderTargetView(mRenderTargetView.Get(), colour);
 }

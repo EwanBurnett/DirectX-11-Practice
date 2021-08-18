@@ -11,7 +11,8 @@ struct VSOut {
 VSOut main(VSIn input)
 {
 	VSOut vso;
-	vso.position = (input.position, 0.0);
+	//vso.position = (input.position.x, input.position.y, input.position.z, 1.0f);
+	vso.position = float4(input.position, 1.0f);
 	vso.color = input.color;
 	return vso;
 }
