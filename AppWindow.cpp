@@ -1,4 +1,5 @@
-#include "Window.h"
+#include "AppWindow.h"
+#include <assert.h>
 
 //Window Class Singleton
 Window::WindowClass Window::WindowClass::wndClass;
@@ -63,7 +64,8 @@ Window::Window(int width, int height, const char* name):
     ShowWindow(hWnd, SW_SHOWDEFAULT);
 
     //Initialize our Graphics
-    mGfx = std::make_unique<Graphics>(hWnd, width, height);
+    mGfx = std::make_unique<Graphics>();
+    assert(mGfx->Init(hWnd, width, height));
 }
 
 Window::~Window()

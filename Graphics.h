@@ -1,5 +1,6 @@
 #pragma once
-#include "KnightWin.h"
+#include "AppIncl.h"
+#include "GfxErr.h"
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <DirectXColors.h>
@@ -10,25 +11,49 @@ namespace wrl = Microsoft::WRL;
 
 class Graphics {
 public:
-	Graphics(HWND hWnd, UINT width, UINT height);
+	Graphics();
 	~Graphics() = default;
 
-	void DrawShape();
-	void DrawFrame();
-	void EndFrame();
-	void ClearBuffer(float r, float g, float b, float a = 1.0f);
+	bool Init(HWND hWnd, UINT width, UINT height);
+	void Update(float dt);
+	void Draw();
+	void Clear(float r = 0.0f, float g = 0.0f, float b = 0.0f, float a = 1.0f);
+	void SetWireframeMode(bool mode);
+
+	wrl::ComPtr<ID3D11Buffer> mVertexBuffer;
+	wrl::ComPtr<ID3D11Buffer> mIndexBuffer;
 
 private:
-	wrl::ComPtr<ID3D11Device> pDevice = nullptr;
-	wrl::ComPtr<IDXGISwapChain> pSwap = nullptr;
-	wrl::ComPtr<ID3D11DeviceContext> pImmContext = nullptr;
+	void InitGeoBuffers();
+	void InitShaders();
+
+	struct Vertex {
+		DirectX::XMFLOAT3 position;
+		DirectX::XMFLOAT4 color;
+	};
+
+private:
+	wrl::ComPtr<ID3D11Device> pDevice;
+	wrl::ComPtr<IDXGISwapChain> pSwapChain;
+	wrl::ComPtr<ID3D11DeviceContext> pImmContext;
+
 	wrl::ComPtr<ID3D11RenderTargetView> mRenderTargetView;
-	//ID3D11RenderTargetView* mRenderTargetView;
 	wrl::ComPtr<ID3D11DepthStencilView> mDepthStencilView;
+
+	
+
+	DirectX::XMFLOAT4X4 mWorldMatrix;
+	DirectX::XMFLOAT4X4 mViewMatrix;
+	DirectX::XMFLOAT4X4 mProjMatrix;
+
+	UINT mIndexCount = 3;
+
+	BOOL mIsWireframeView;
 
 	UINT mClientWidth;
 	UINT mClientHeight;
 
-	BOOL mEnable4xMSAA;
+	BOOL mEnable4xMSAA = true;
+	UINT m4xMSAAQuality;
 };
 

@@ -1,7 +1,7 @@
 #pragma once
-#include "KnightWin.h"
+#include "AppIncl.h"
 #include "Graphics.h"
-#include "Timer.h"
+#include "AppTimer.h"
 #include <memory>
 
 class Window {

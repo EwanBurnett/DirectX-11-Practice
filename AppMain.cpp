@@ -1,4 +1,4 @@
-#include "Window.h"
+#include "AppWindow.h"
 #include <sstream>
 #include <memory>
 
@@ -49,8 +49,8 @@ void DoFrame()
     //Process if timer is unpaused
     if ((mWnd->Timer().IsPaused()) == false){
         Update();
-        mWnd->Gfx().DrawFrame();
-        mWnd->Gfx().EndFrame();
+        mWnd->Gfx().Update(mWnd->Timer().DeltaTime());
+        mWnd->Gfx().Draw();
     }
     else {
         Sleep(100);
@@ -66,6 +66,11 @@ void Update()
     g = (sin( mWnd->Timer().GameTime()) + 1) / 2;
     b = (sin( mWnd->Timer().GameTime()) + 1) / 2;
 
-    mWnd->Gfx().ClearBuffer(r, g, b);
+    mWnd->Gfx().Clear(r, g, b);
+
+    if (mWnd->Timer().GameTime() >= 5.0f) {
+        mWnd->Gfx().SetWireframeMode(true);
+    }
+    
 
 }

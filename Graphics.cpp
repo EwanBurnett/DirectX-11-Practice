@@ -7,25 +7,23 @@
 
 using namespace DirectX;
 
-
-Graphics::Graphics(HWND hWnd, UINT width, UINT height)
+Graphics::Graphics()
 {
-	OutputDebugString(">> Initializing Graphics...\n");
 
+}
+
+bool Graphics::Init(HWND hWnd, UINT width, UINT height)
+{
+	//init window bounds
 	mClientWidth = width;
 	mClientHeight = height;
-	mEnable4xMSAA = true;
 
-	//D3D Device Creation
-	D3D_FEATURE_LEVEL featureLevel;
-
-	OutputDebugString(">> Creating D3D11 Device\n");
-
+	//Create D3D11 Device Interface
 	UINT createDeviceFlags = 0;
-
 #if defined(DEBUG) || defined (_DEBUG)
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
+
 	HRESULT hr = D3D11CreateDevice(
 		0,
 		D3D_DRIVER_TYPE_HARDWARE,
@@ -35,17 +33,13 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 		0,
 		D3D11_SDK_VERSION,
 		&pDevice,
-		&featureLevel,
+		nullptr,
 		&pImmContext
 	);
 
 	if (FAILED(hr)) {
 		MessageBox(0, "D3D11 Device Creation Failed", 0, 0);
-		return;
-	}
-	if (featureLevel != D3D_FEATURE_LEVEL_11_0) {
-		MessageBox(0, "DirectX 11 not supported by current hardware.", 0, 0);
-		return;
+		return false;
 	}
 
 
@@ -97,12 +91,12 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 	dxgiAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&dxgiFactory);
 
 	OutputDebugString(">> Creating Swapchain\n");
-	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &sd, &pSwap);
+	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &sd, &pSwapChain);
 
 
 	//Creating render target view
 	wrl::ComPtr<ID3D11Texture2D> backBuffer;
-	pSwap->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBuffer);
+	pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBuffer);
 	pDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, &mRenderTargetView);
 
 
@@ -131,38 +125,98 @@ Graphics::Graphics(HWND hWnd, UINT width, UINT height)
 	pDevice->CreateTexture2D(&depthStencilDesc, 0, &mDepthStencilBuffer);
 	pDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), 0, &mDepthStencilView);
 
-	OutputDebugString(">> Graphics initialization complete\n");
+	//Setting the Viewport
+	D3D11_VIEWPORT vp = { };
+	vp.TopLeftX = 0.0f;
+	vp.TopLeftY = 0.0f;
+	vp.Width = static_cast<float>(mClientWidth);
+	vp.Height = static_cast<float>(mClientHeight);
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+
+	pImmContext->RSSetViewports(1, &vp);
+
+	//InitGeoBuffers();
+	InitShaders();
+
+	return true;
 }
 
-
-void Graphics::DrawShape()
+void Graphics::Update(float dt)
 {
-	OutputDebugString(">> Creating Vertex Buffer\n");
+	InitGeoBuffers();
 
-	//Creating a Vertex Buffer
-	//Vertex struct 
-	struct Vertex1 {
-		XMFLOAT3 pos;
-		XMFLOAT4 color;
-	};
-	
-	////Raw vertex data (Hexagon)
-	//Vertex1 verts[] =
-	//{
-	//	{XMFLOAT3(0, 0, 0.2), XMFLOAT4(0.8, 0.5, 0.5, 1)},
-	//	{XMFLOAT3(0.5, 1, 0.2), XMFLOAT4(0.2, 0.7, 0.3, 1)},
-	//	{XMFLOAT3(1, 0, 0.2), XMFLOAT4(0.4, 0.1, 0.9, 1)},
-	//	{XMFLOAT3(0.5, -1, 0.2), XMFLOAT4(0.6, 0.3, 0.1, 1)},
-	//	{XMFLOAT3(-0.5, -1, 0.3), XMFLOAT4(0.9, 0.4, 0.4, 1)},
-	//	{XMFLOAT3(-1, 0, 0.2), XMFLOAT4(0.3, 0.5, 0.5, 1)},
-	//	{XMFLOAT3(-0.5, 0, 0.2), XMFLOAT4(0.3, 0.8, 0.55, 1)}
-	//};
+	//Update matrices (TODO)
+	mWorldMatrix = mWorldMatrix;
+	mViewMatrix = mViewMatrix;
+	mProjMatrix = mProjMatrix;
+}
 
-	Vertex1 verts[] =
+void Graphics::Draw()
+{
+	//Binding view to Output Merger
+	pImmContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), nullptr); //mDepthStencilView.Get()
+
+	pImmContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	pImmContext->DrawIndexed(mIndexCount, 0, 0);
+	pSwapChain->Present(1u, 0);
+}
+
+void Graphics::Clear(float r, float g, float b, float a)
+{
+	pImmContext->ClearDepthStencilView(mDepthStencilView.Get(), 0, 1, 0);
+	const float colour[] = { r, g, b, a };
+	pImmContext->ClearRenderTargetView(mRenderTargetView.Get(), colour);
+}
+
+void Graphics::SetWireframeMode(bool mode)
+{
+	mIsWireframeView = mode;
+
+	//Rasterizer Settings
+	D3D11_RASTERIZER_DESC rdSolid;
+	ZeroMemory(&rdSolid, sizeof(D3D11_RASTERIZER_DESC));
+	rdSolid.FillMode = D3D11_FILL_SOLID;
+	rdSolid.CullMode = D3D11_CULL_BACK;
+	rdSolid.FrontCounterClockwise = false;
+	rdSolid.DepthBias = 0;
+	rdSolid.DepthBiasClamp = 0;
+	rdSolid.SlopeScaledDepthBias = 0.0f;
+	rdSolid.DepthClipEnable = true;
+	rdSolid.ScissorEnable = false;
+	rdSolid.MultisampleEnable = false;
+	rdSolid.AntialiasedLineEnable = false;
+
+	D3D11_RASTERIZER_DESC rdWire;
+	ZeroMemory(&rdWire, sizeof(D3D11_RASTERIZER_DESC));
+	rdWire.FillMode = D3D11_FILL_WIREFRAME;
+	rdWire.CullMode = D3D11_CULL_BACK;
+	rdWire.FrontCounterClockwise = false;
+	rdWire.DepthBias = 0;
+	rdWire.DepthBiasClamp = 0;
+	rdWire.SlopeScaledDepthBias = 0.0f;
+	rdWire.DepthClipEnable = true;
+	rdWire.ScissorEnable = false;
+	rdWire.MultisampleEnable = false;
+	rdWire.AntialiasedLineEnable = false;
+
+	wrl::ComPtr<ID3D11RasterizerState> mRS;
+	if (mIsWireframeView) {
+		pDevice->CreateRasterizerState(&rdWire, &mRS);
+	}
+	else {
+		pDevice->CreateRasterizerState(&rdSolid, &mRS);
+	}
+	pImmContext->RSSetState(mRS.Get());
+}
+
+void Graphics::InitGeoBuffers()
+{
+	Vertex verts[] =
 	{
-		{XMFLOAT3(0, 0.5, 0), XMFLOAT4(0.8, 0.5, 0.5, 1)},
-		{XMFLOAT3(0.5, -0.5, 0), XMFLOAT4(0.4, 0.1, 0.9, 1)},
-		{XMFLOAT3(-0.5, -0.5, 0), XMFLOAT4(0.3, 0.8, 0.55, 1)}
+		{XMFLOAT3(0, 0.5, 0), XMFLOAT4(1, 0, 0, 1)},
+		{XMFLOAT3(0.5, -0.5, 0), XMFLOAT4(0, 1, 0, 1)},
+		{XMFLOAT3(-0.5, -0.5, 0), XMFLOAT4(0, 0, 1, 1)}
 	};
 
 
@@ -173,7 +227,7 @@ void Graphics::DrawShape()
 	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vbd.CPUAccessFlags = 0;
 	vbd.MiscFlags = 0;
-	vbd.StructureByteStride = sizeof(Vertex1);
+	vbd.StructureByteStride = sizeof(Vertex);
 
 	//Initialize the subresource with our verts
 	D3D11_SUBRESOURCE_DATA vInitData;
@@ -184,7 +238,7 @@ void Graphics::DrawShape()
 	pDevice->CreateBuffer(&vbd, &vInitData, &mVB);
 
 	//Bind the vertex buffer to an input slot of the device
-	UINT strides = sizeof(Vertex1);
+	UINT strides = sizeof(Vertex);
 	UINT offset = 0;
 	pImmContext->IASetVertexBuffers(0, 1, mVB.GetAddressOf(), &strides, &offset);
 
@@ -195,13 +249,8 @@ void Graphics::DrawShape()
 	OutputDebugString(">> Creating Index Buffer\n");
 
 	//Index list for our Hexagon
-	UINT indices[18] = {
-		0, 1, 2,	//Triangle 0
-		0, 2, 3,
-		0, 3, 4,
-		0, 4, 5,
-		0, 5, 6,
-		0, 6, 1		//Triangle 6
+	UINT indices[3] = {
+		0, 1, 2
 	};
 
 	//Creating an index buffer Description
@@ -224,31 +273,11 @@ void Graphics::DrawShape()
 	//Bind the buffer to the pipeline
 	pImmContext->IASetIndexBuffer(mIB.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-	OutputDebugString(">> Index Buffer Bound to pipeline\n");
-	//pImmContext->DrawIndexed(18, 0, 0);
+}
 
-
-	//Rasterizer Settings
-	D3D11_RASTERIZER_DESC rd;
-	ZeroMemory(&rd, sizeof(D3D11_RASTERIZER_DESC));
-	rd.FillMode = D3D11_FILL_SOLID;
-	rd.CullMode = D3D11_CULL_BACK;
-	rd.FrontCounterClockwise = false;
-	rd.DepthBias = 0;
-	rd.DepthBiasClamp = 0;
-	rd.SlopeScaledDepthBias = 0.0f;
-	rd.DepthClipEnable = true;
-	rd.ScissorEnable = false;
-	rd.MultisampleEnable = false;
-	rd.AntialiasedLineEnable = false;
-
-
-	wrl::ComPtr<ID3D11RasterizerState> mRS;
-	pDevice->CreateRasterizerState(&rd, &mRS);
-	pImmContext->RSSetState(mRS.Get());
-
-
-	//Shaders
+void Graphics::InitShaders()
+{
+	//Blob for our Shaders
 	wrl::ComPtr<ID3DBlob> pBlob;
 
 	//Loading our pixel shader, and binding it to the pipeline
@@ -277,44 +306,4 @@ void Graphics::DrawShape()
 	//Bind the vertex shader
 	pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader);
 	pImmContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
-
-	//Binding views to Output Merger
-	OutputDebugString(">> Binding to Output Merger\n");
-	pImmContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), nullptr); //mDepthStencilView.Get()
-
-	//Setting the Viewport
-	D3D11_VIEWPORT vp = { };
-	vp.TopLeftX = 0.0f;
-	vp.TopLeftY = 0.0f;
-	vp.Width = static_cast<float>(mClientWidth);
-	vp.Height = static_cast<float>(mClientHeight);
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-
-	pImmContext->RSSetViewports(1, &vp);
-
-	//Set primitive topology 
-	pImmContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	//Draw the shape
-	pImmContext->Draw((UINT)std::size(verts), 0);
-	//pImmContext->DrawIndexed(18, 0, 0);
-}
-
-void Graphics::DrawFrame()
-{
-	DrawShape();
-	OutputDebugString(">> Drawn to screen\n");
-}
-
-void Graphics::EndFrame()
-{
-	pSwap->Present(1u, 0);
-}
-
-void Graphics::ClearBuffer(float r, float g, float b, float a)
-{
-	//pImmContext->ClearDepthStencilView(mDepthStencilView.Get(), 0, 1, 0);
-	const float colour[] = { r, g, b, a };
-	pImmContext->ClearRenderTargetView(mRenderTargetView.Get(), colour);
 }
