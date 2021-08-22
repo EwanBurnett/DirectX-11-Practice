@@ -17,6 +17,7 @@ bool Graphics::Init(HWND hWnd, UINT width, UINT height)
 	//init window bounds
 	mClientWidth = width;
 	mClientHeight = height;
+	mAspectRatio = width / height;
 
 	//Create D3D11 Device Interface
 	UINT createDeviceFlags = 0;
@@ -121,9 +122,18 @@ bool Graphics::Init(HWND hWnd, UINT width, UINT height)
 	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
 	wrl::ComPtr<ID3D11Texture2D> mDepthStencilBuffer;
-	
-	pDevice->CreateTexture2D(&depthStencilDesc, 0, &mDepthStencilBuffer);
-	pDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), 0, &mDepthStencilView);
+	pDevice->CreateTexture2D(&depthStencilDesc, nullptr, &mDepthStencilBuffer);
+
+
+	//Create Depth Stencil View
+	D3D11_DEPTH_STENCIL_VIEW_DESC mDSVdesc = {};
+	mDSVdesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	mDSVdesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+	mDSVdesc.Texture2D.MipSlice = 0;
+	mDSVdesc.Flags = 0;
+
+	pDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), &mDSVdesc, &mDepthStencilView);
+
 
 	//Setting the Viewport
 	D3D11_VIEWPORT vp = { };
@@ -150,6 +160,20 @@ void Graphics::Update(float dt)
 	mWorldMatrix = mWorldMatrix;
 	mViewMatrix = mViewMatrix;
 	mProjMatrix = mProjMatrix;
+	
+	static float angle;
+	float speed = 5;
+	angle += 0.1 * speed * dt;
+	if (angle > 360) { angle = 0.0f; }
+	XMStoreFloat4x4(&mWorldMatrix, XMMatrixTranspose(
+		XMMatrixRotationX(angle) *
+		XMMatrixRotationZ(angle) *
+		XMMatrixTranslation(0, 0, 4) *
+		XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1.0f, 10.0f)
+	));
+	//XMStoreFloat4x4(&mViewMatrix, XMMatrixTranspose(XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1, 10)));
+
+	InitConstBuffers();
 }
 
 void Graphics::Draw()
@@ -164,9 +188,9 @@ void Graphics::Draw()
 
 void Graphics::Clear(float r, float g, float b, float a)
 {
-	pImmContext->ClearDepthStencilView(mDepthStencilView.Get(), 0, 1, 0);
 	const float colour[] = { r, g, b, a };
 	pImmContext->ClearRenderTargetView(mRenderTargetView.Get(), colour);
+	pImmContext->ClearDepthStencilView(mDepthStencilView.Get(), 0, 1, 0);
 }
 
 void Graphics::SetWireframeMode(bool mode)
@@ -212,11 +236,13 @@ void Graphics::SetWireframeMode(bool mode)
 
 void Graphics::InitGeoBuffers()
 {
+	//Declare geometry vertices in local space
 	Vertex verts[] =
 	{
-		{XMFLOAT3(0, 0.5, 0), XMFLOAT4(1, 0, 0, 1)},
-		{XMFLOAT3(0.5, -0.5, 0), XMFLOAT4(0, 1, 0, 1)},
-		{XMFLOAT3(-0.5, -0.5, 0), XMFLOAT4(0, 0, 1, 1)}
+		{XMFLOAT3(0, 1, 0), XMFLOAT4(1, 1, 1, 1)},
+		{XMFLOAT3(1, 0, -1), XMFLOAT4(1, 0, 0, 1)},
+		{XMFLOAT3(-1, 0, -1), XMFLOAT4(0, 1, 0, 1)},
+		{XMFLOAT3(0, 0, 1), XMFLOAT4(0, 0, 1, 1)}
 	};
 
 
@@ -248,10 +274,15 @@ void Graphics::InitGeoBuffers()
 	
 	OutputDebugString(">> Creating Index Buffer\n");
 
-	//Index list for our Hexagon
-	UINT indices[3] = {
-		0, 1, 2
+	//Index list for our shape
+	UINT indices[12] = {
+		0, 1, 2,
+		0, 2, 3, 
+		0, 3, 1, 
+		1, 2, 3
 	};
+
+	//	mIndexCount = sizeof(indices);
 
 	//Creating an index buffer Description
 	D3D11_BUFFER_DESC ibd;
@@ -306,4 +337,35 @@ void Graphics::InitShaders()
 	//Bind the vertex shader
 	pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pVertexShader);
 	pImmContext->VSSetShader(pVertexShader.Get(), nullptr, 0);
+}
+
+void Graphics::InitConstBuffers()
+{
+	//A simple constant buffer, that just stores the world matrix.
+	struct ConstantBuffer {
+		XMMATRIX mWorldView;
+	};
+
+	ConstantBuffer mCB = { };
+	XMMATRIX w = XMLoadFloat4x4(&mWorldMatrix);
+	XMMATRIX v = XMLoadFloat4x4(&mViewMatrix);
+	mCB.mWorldView = w;
+
+	wrl::ComPtr<ID3D11Buffer> pConstantBuffer;
+
+	D3D11_BUFFER_DESC mCBD = { 0 };
+	mCBD.Usage = D3D11_USAGE_DYNAMIC;
+	mCBD.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	mCBD.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	mCBD.ByteWidth = sizeof(mCB);
+	mCBD.MiscFlags = 0;
+	mCBD.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA mCBData;
+	mCBData.pSysMem = &mCB;
+
+	pDevice->CreateBuffer(&mCBD, &mCBData, &pConstantBuffer);
+
+	pImmContext->VSSetConstantBuffers(0, 1, pConstantBuffer.GetAddressOf());
+
 }

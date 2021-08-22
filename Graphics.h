@@ -26,6 +26,7 @@ public:
 private:
 	void InitGeoBuffers();
 	void InitShaders();
+	void InitConstBuffers();
 
 	struct Vertex {
 		DirectX::XMFLOAT3 position;
@@ -46,12 +47,13 @@ private:
 	DirectX::XMFLOAT4X4 mViewMatrix;
 	DirectX::XMFLOAT4X4 mProjMatrix;
 
-	UINT mIndexCount = 3;
+	UINT mIndexCount = 12;
 
 	BOOL mIsWireframeView;
 
 	UINT mClientWidth;
 	UINT mClientHeight;
+	FLOAT mAspectRatio;
 
 	BOOL mEnable4xMSAA = true;
 	UINT m4xMSAAQuality;

@@ -67,10 +67,5 @@ void Update()
     b = (sin( mWnd->Timer().GameTime()) + 1) / 2;
 
     mWnd->Gfx().Clear(r, g, b);
-
-    if (mWnd->Timer().GameTime() >= 5.0f) {
-        mWnd->Gfx().SetWireframeMode(true);
-    }
-    
-
+   
 }
