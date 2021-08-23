@@ -2,10 +2,11 @@
 #include "AppIncl.h"
 #include "Graphics.h"
 #include "AppTimer.h"
+#include "imgui/imgui_impl_win32.h"
 #include <memory>
 
 class Window {
-
+    
     //Manages registration and cleanup of the window class
 
     class WindowClass {

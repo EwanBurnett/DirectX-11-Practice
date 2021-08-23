@@ -19,6 +19,7 @@ bool Graphics::Init(HWND hWnd, UINT width, UINT height)
 	mClientHeight = height;
 	mAspectRatio = width / height;
 
+
 	//Init matrices
 	XMFLOAT4X4 I;
 	XMStoreFloat4x4(&I, XMMatrixIdentity());
@@ -51,6 +52,7 @@ bool Graphics::Init(HWND hWnd, UINT width, UINT height)
 	}
 
 
+	
 	//Checking 4x Multisampling Antialiasing support
 	UINT m4xMSAAQuality;
 	pDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m4xMSAAQuality);
@@ -153,6 +155,10 @@ bool Graphics::Init(HWND hWnd, UINT width, UINT height)
 
 	pImmContext->RSSetViewports(1, &vp);
 
+	//init GUI
+	mGui = std::make_unique<GUI>();
+	ImGui_ImplDX11_Init(pDevice.Get(), pImmContext.Get());
+
 	//InitGeoBuffers();
 	InitShaders();
 
@@ -171,11 +177,11 @@ void Graphics::Update(float dt)
 		XMMatrixTranslation(0, 0, 4)
 	);
 
-	mArcBall.Orbit(8, 0.1f, angle);
+	mArcBall.Orbit(18, angle - 180, 0.0f);
 
 	XMStoreFloat4x4(&mViewMatrix, mArcBall.GetCameraView());
 
-	XMStoreFloat4x4(&mProjMatrix, XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1.0f, 300.0f));
+	XMStoreFloat4x4(&mProjMatrix, XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1.0f, 20.0f));
 	//XMStoreFloat4x4(&mViewMatrix, XMMatrixTranspose(XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1, 10)));
 
 	InitConstBuffers();
@@ -208,7 +214,7 @@ void Graphics::SetWireframeMode(bool mode)
 	rdSolid.FillMode = D3D11_FILL_SOLID;
 	rdSolid.CullMode = D3D11_CULL_BACK;
 	rdSolid.FrontCounterClockwise = false;
-	rdSolid.DepthBias = 0;
+	rdSolid.DepthBias = 0;  
 	rdSolid.DepthBiasClamp = 0;
 	rdSolid.SlopeScaledDepthBias = 0.0f;
 	rdSolid.DepthClipEnable = true;

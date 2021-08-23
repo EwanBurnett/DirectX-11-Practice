@@ -2,7 +2,10 @@
 #include "AppIncl.h"
 #include "GfxErr.h"
 #include "OrbitalCamera.h"
+#include "AppGUI.h"
+#include "imgui/imgui_impl_dx11.h"
 #include <d3d11.h>
+#include <memory>
 #include <DirectXMath.h>
 #include <DirectXColors.h>
 #include <effects.h>
@@ -43,6 +46,7 @@ private:
 	wrl::ComPtr<ID3D11DepthStencilView> mDepthStencilView;
 
 	OrbitalCamera mArcBall;
+	std::unique_ptr<GUI> mGui;
 
 	DirectX::XMFLOAT4X4 mWorldMatrix;
 	DirectX::XMFLOAT4X4 mViewMatrix;

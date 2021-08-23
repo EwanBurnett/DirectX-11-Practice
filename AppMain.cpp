@@ -1,5 +1,7 @@
 #include "App.h"
 #include "AppWindow.h"
+#include "imgui/imgui_impl_dx11.h"
+#include "imgui/imgui_impl_win32.h"
 #include <sstream>
 #include <memory>
 
@@ -49,9 +51,21 @@ void DoFrame()
 
     //Process if timer is unpaused
     if ((mWnd->Timer().IsPaused()) == false){
+
+
+        ImGui_ImplDX11_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        ImGui::NewFrame();
+
         Update();
         mWnd->Gfx().Update(mWnd->Timer().DeltaTime());
+
         mWnd->Gfx().Draw();
+        ImGui::ShowDemoWindow();    //IMGUI test
+
+        ImGui::Render();
+        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+        
     }
     else {
         Sleep(100);
