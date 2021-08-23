@@ -19,6 +19,13 @@ bool Graphics::Init(HWND hWnd, UINT width, UINT height)
 	mClientHeight = height;
 	mAspectRatio = width / height;
 
+	//Init matrices
+	XMFLOAT4X4 I;
+	XMStoreFloat4x4(&I, XMMatrixIdentity());
+	mWorldMatrix = I;
+	mViewMatrix = I;
+	mProjMatrix = I;
+
 	//Create D3D11 Device Interface
 	UINT createDeviceFlags = 0;
 #if defined(DEBUG) || defined (_DEBUG)
@@ -155,22 +162,20 @@ bool Graphics::Init(HWND hWnd, UINT width, UINT height)
 void Graphics::Update(float dt)
 {
 	InitGeoBuffers();
-
-	//Update matrices (TODO)
-	mWorldMatrix = mWorldMatrix;
-	mViewMatrix = mViewMatrix;
-	mProjMatrix = mProjMatrix;
 	
 	static float angle;
 	float speed = 5;
 	angle += 0.1 * speed * dt;
 	if (angle > 360) { angle = 0.0f; }
-	XMStoreFloat4x4(&mWorldMatrix, XMMatrixTranspose(
-		XMMatrixRotationX(angle) *
-		XMMatrixRotationZ(angle) *
-		XMMatrixTranslation(0, 0, 4) *
-		XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1.0f, 10.0f)
-	));
+	XMStoreFloat4x4(&mWorldMatrix, 	//W = SRT
+		XMMatrixTranslation(0, 0, 4)
+	);
+
+	mArcBall.Orbit(8, 0.1f, angle);
+
+	XMStoreFloat4x4(&mViewMatrix, mArcBall.GetCameraView());
+
+	XMStoreFloat4x4(&mProjMatrix, XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1.0f, 300.0f));
 	//XMStoreFloat4x4(&mViewMatrix, XMMatrixTranspose(XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1, 10)));
 
 	InitConstBuffers();
@@ -349,7 +354,9 @@ void Graphics::InitConstBuffers()
 	ConstantBuffer mCB = { };
 	XMMATRIX w = XMLoadFloat4x4(&mWorldMatrix);
 	XMMATRIX v = XMLoadFloat4x4(&mViewMatrix);
-	mCB.mWorldView = w;
+	XMMATRIX p = XMLoadFloat4x4(&mProjMatrix);
+
+	mCB.mWorldView = w * v * p;
 
 	wrl::ComPtr<ID3D11Buffer> pConstantBuffer;
 

@@ -33,7 +33,7 @@
     <ClCompile Include="App.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
+    <ClCompile Include="OrbitalCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FPSTracker.cpp">
@@ -62,7 +62,7 @@
     <ClInclude Include="FPSTracker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="OrbitalCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GfxErr.h">

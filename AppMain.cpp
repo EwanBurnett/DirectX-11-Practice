@@ -1,3 +1,4 @@
+#include "App.h"
 #include "AppWindow.h"
 #include <sstream>
 #include <memory>

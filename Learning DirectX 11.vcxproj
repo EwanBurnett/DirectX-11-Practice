@@ -160,7 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
-    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="OrbitalCamera.cpp" />
     <ClCompile Include="FPSTracker.cpp" />
     <ClCompile Include="GfxErr.cpp" />
     <ClCompile Include="Graphics.cpp" />
@@ -193,7 +193,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
-    <ClInclude Include="Camera.h" />
+    <ClInclude Include="OrbitalCamera.h" />
     <ClInclude Include="FPSTracker.h" />
     <ClInclude Include="GfxErr.h" />
     <ClInclude Include="Graphics.h" />

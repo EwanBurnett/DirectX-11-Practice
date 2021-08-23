@@ -1,6 +1,7 @@
 #pragma once
 #include "AppIncl.h"
 #include "GfxErr.h"
+#include "OrbitalCamera.h"
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <DirectXColors.h>
@@ -41,7 +42,7 @@ private:
 	wrl::ComPtr<ID3D11RenderTargetView> mRenderTargetView;
 	wrl::ComPtr<ID3D11DepthStencilView> mDepthStencilView;
 
-	
+	OrbitalCamera mArcBall;
 
 	DirectX::XMFLOAT4X4 mWorldMatrix;
 	DirectX::XMFLOAT4X4 mViewMatrix;
