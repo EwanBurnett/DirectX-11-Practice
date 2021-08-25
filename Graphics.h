@@ -51,20 +51,25 @@ private:
 
 	DirectX::XMFLOAT3 mScale;
 	DirectX::XMFLOAT3 mRotation;
-	DirectX::XMFLOAT3 mTranslaton;
+	DirectX::XMFLOAT3 mTranslation;
 
 	DirectX::XMFLOAT3 mCameraPos;	//radius, theta, phi
+
+	FLOAT mNearPlane;
+	FLOAT mFarPlane;
+	FLOAT mFoV;
+	FLOAT mTimeScale;
 
 	DirectX::XMFLOAT4X4 mWorldMatrix;
 	DirectX::XMFLOAT4X4 mViewMatrix;
 	DirectX::XMFLOAT4X4 mProjMatrix;
 
-	UINT mIndexCount = 12;
+	UINT mIndexCount = 36;
 
 	BOOL mIsWireframeView;
 
-	UINT mClientWidth;
-	UINT mClientHeight;
+	FLOAT mClientWidth;
+	FLOAT mClientHeight;
 	FLOAT mAspectRatio;
 
 	BOOL mEnable4xMSAA = true;

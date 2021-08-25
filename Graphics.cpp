@@ -9,18 +9,13 @@ using namespace DirectX;
 
 Graphics::Graphics()
 {
+	mFoV = 90.0f;
+	mNearPlane = 0.1f;
+	mFarPlane = 1000.0f;
+	mTimeScale = 1.0f;
 
-}
-
-bool Graphics::Init(HWND hWnd, UINT width, UINT height)
-{
-	//init window bounds
-	mClientWidth = width;
-	mClientHeight = height;
-	mAspectRatio = width / height;
-
-	
-	XMStoreFloat3(&mScale, XMVectorSet(0.2, 0.2, 0.2, 1));
+	XMStoreFloat3(&mCameraPos, XMVectorSet(1.0f, 0, 0, 0));
+	XMStoreFloat3(&mScale, XMVectorReplicate(0.2f));
 
 	//Init matrices
 	XMFLOAT4X4 I;
@@ -28,6 +23,19 @@ bool Graphics::Init(HWND hWnd, UINT width, UINT height)
 	mWorldMatrix = I;
 	mViewMatrix = I;
 	mProjMatrix = I;
+
+	mClientHeight = 0;
+	mClientWidth = 0;
+}
+
+bool Graphics::Init(HWND hWnd, UINT width, UINT height)
+{
+	//init window bounds
+	mClientWidth = width;
+	mClientHeight = height;
+	mAspectRatio = static_cast<float>(width / height);
+
+	
 
 	//Create D3D11 Device Interface
 	UINT createDeviceFlags = 0;
@@ -102,7 +110,7 @@ bool Graphics::Init(HWND hWnd, UINT width, UINT height)
 	wrl::ComPtr<IDXGIFactory> dxgiFactory = 0;
 	dxgiAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&dxgiFactory);
 
-	OutputDebugString(">> Creating Swapchain\n");
+	//OutputDebugString(">> Creating Swapchain\n");
 	dxgiFactory->CreateSwapChain(dxgiDevice.Get(), &sd, &pSwapChain);
 
 
@@ -171,11 +179,13 @@ void Graphics::Update(float dt)
 {
 	InitGeoBuffers();
 	
-	static float angle;
-	float speed = 5;
-	angle += 0.1 * speed * dt;
-	if (angle > 360) { angle = 0.0f; }
+	static double angle;
+	angle += 0.1 * mTimeScale * dt;
+	if (angle >= 360) { 
+		angle = 0.0f; 
+	}
 
+	//mRotation.y = angle;
 	/*XMStoreFloat4x4(&mWorldMatrix,
 		XMMatrixTranspose(
 			XMMatrixTranslation(0, 0, 4)	*
@@ -183,7 +193,7 @@ void Graphics::Update(float dt)
 		));*/
 	XMVECTOR scale = XMLoadFloat3(&mScale);
 	XMVECTOR rotation = XMLoadFloat3(&mRotation);
-	XMVECTOR translation = XMLoadFloat3(&mTranslaton);
+	XMVECTOR translation = XMLoadFloat3(&mTranslation);
 
 	XMStoreFloat4x4(&mWorldMatrix, 	//W = SRT
 		XMMatrixScalingFromVector(scale)	*
@@ -195,8 +205,14 @@ void Graphics::Update(float dt)
 
 	XMStoreFloat4x4(&mViewMatrix, mArcBall.GetCameraView());
 
-	float fov = 90;
-	XMStoreFloat4x4(&mProjMatrix, XMMatrixPerspectiveFovLH(XMConvertToRadians(fov), mAspectRatio, 1.0f, 20.0f));
+	XMStoreFloat4x4(&mProjMatrix, XMMatrixPerspectiveFovLH(XMConvertToRadians(mFoV), mAspectRatio, mNearPlane, mFarPlane));
+	
+	//XMStoreFloat4x4(&mWorldMatrix, XMMatrixIdentity());
+	//XMVECTOR eyepos = XMVectorSet(0, 0, -207.0f, 0);
+	//XMVECTOR tgtpos = XMVectorSet(0, 0, 0, 0);
+	//XMVECTOR upvect = XMVectorSet(0, 1, 0, 0);
+	//XMStoreFloat4x4(&mViewMatrix, XMMatrixLookAtLH(eyepos, tgtpos, upvect));
+	
 	//XMStoreFloat4x4(&mViewMatrix, XMMatrixTranspose(XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1, 10)));
 
 	InitConstBuffers();
@@ -265,22 +281,51 @@ void Graphics::SetWireframeMode(bool mode)
 
 void Graphics::CreateGUI()
 {
+	static float vScale[3] = { mScale.x, mScale.y, mScale.z };
+	static float vRotation[3] = { mRotation.x, mRotation.y, mRotation.z };
+	static float vTranslation[3] = { mTranslation.x, mTranslation.y, mTranslation.z };
 
+	static float vWorldUp[3] = { 0, 1, 0 };
+	static float vTarget[3] = { 0, 0, 0 };
+	static float vCamPos[3] = { 0, 0, -2 };
 
 	ImGui::NewFrame();
 	ImGui::Begin("DX11 Application");
 
 	ImGui::Text("Application Description");
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::SliderFloat("Camera Distance", &mCameraPos.x, 0.1f, 20.0f);
 	ImGui::SliderAngle("Camera Orbit", &mCameraPos.y, -180.0f, 180.0f);
 	ImGui::SliderAngle("Camera Angle", &mCameraPos.z, -90.0f, 90.0f);
 	
-	ImGui::SliderAngle("Object Rotation Y", &mRotation.y, 0.0f, 360.0f);
+	ImGui::SliderFloat3("Camera Position", vCamPos, -10, 10);
+	ImGui::SliderFloat3("Camera Target", vTarget, -10, 10);
+	ImGui::SliderFloat3("Camera Up", vWorldUp, 0, 1);
+
+	ImGui::SliderFloat3("Object Scale", vScale, 0.1, 20);
+	ImGui::SliderFloat3("Object Rotation", vRotation, 0, 360);
+	ImGui::SliderFloat3("Object Translation", vTranslation, -20, 20);
+
+	ImGui::SliderFloat("Near Plane", &mNearPlane, 0.1f, 100.0f);
+	ImGui::SliderFloat("Far Plane", &mFarPlane, 0.1f, 100.0f);
+	ImGui::SliderFloat("Field of View", &mFoV, 30.0f, 110.0f);
+
+	ImGui::Button("Auto Rotate");
+	ImGui::SliderFloat("Timescale", &mTimeScale, 0.1f, 100.0f);
+
 	ImGui::End();
 	ImGui::EndFrame();
 
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+	mScale = { vScale[0], vScale[1], vScale[2] };
+	mRotation = { XMConvertToRadians( vRotation[0]), XMConvertToRadians(vRotation[1]), XMConvertToRadians(vRotation[2]) };
+	mTranslation = { vTranslation[0], vTranslation[1], vTranslation[2] };
+	XMVECTOR tgt = XMVectorSet(vTarget[0], vTarget[1], vTarget[2], 1.0f);
+	mArcBall.SetTargetPos(tgt);
+	XMVECTOR up = XMVectorSet(vWorldUp[0], vWorldUp[1], vWorldUp[2], 1.0f);
+	mArcBall.SetWorldUp(up);
 }
 
 void Graphics::InitGeoBuffers()
@@ -288,10 +333,14 @@ void Graphics::InitGeoBuffers()
 	//Declare geometry vertices in local space
 	Vertex verts[] =
 	{
-		{XMFLOAT3(0, 1, 0), XMFLOAT4(1, 1, 1, 1)},
-		{XMFLOAT3(1, 0, -1), XMFLOAT4(1, 0, 0, 1)},
-		{XMFLOAT3(-1, 0, -1), XMFLOAT4(0, 1, 0, 1)},
-		{XMFLOAT3(0, 0, 1), XMFLOAT4(0, 0, 1, 1)}
+		{XMFLOAT3(-1, -1, -1), XMFLOAT4(1, 1, 1, 1)},
+		{XMFLOAT3(1, -1, -1), XMFLOAT4(1, 1, 0, 1)},
+		{XMFLOAT3(1, -1, 1), XMFLOAT4(1, 0, 1, 1)},
+		{XMFLOAT3(-1, -1, 1), XMFLOAT4(0, 1, 1, 1)},
+		{XMFLOAT3(-1, 1, -1), XMFLOAT4(1, 0, 0, 1)},
+		{XMFLOAT3(1, 1, -1), XMFLOAT4(0, 1, 0, 1)},
+		{XMFLOAT3(1, 1, 1), XMFLOAT4(0, 0, 1, 1)},
+		{XMFLOAT3(-1, 1, 1), XMFLOAT4(0, 0, 0, 1)},
 	};
 
 
@@ -317,18 +366,27 @@ void Graphics::InitGeoBuffers()
 	UINT offset = 0;
 	pImmContext->IASetVertexBuffers(0, 1, mVB.GetAddressOf(), &strides, &offset);
 
-	OutputDebugString(">> Vertex Buffer Bound to pipeline\n");
+	//OutputDebugString(">> Vertex Buffer Bound to pipeline\n");
 	
 	//Creating an Index Buffer
 	
-	OutputDebugString(">> Creating Index Buffer\n");
+	//OutputDebugString(">> Creating Index Buffer\n");
 
+	verts;
 	//Index list for our shape
-	UINT indices[12] = {
-		0, 1, 2,
-		0, 2, 3, 
-		0, 3, 1, 
-		1, 2, 3
+	UINT indices[36] = {
+		0, 2, 1,	//Bottom Face
+		0, 3, 2,
+		0, 5, 4,	//Back Face
+		0, 1, 5,
+		1, 6, 5,	//Right Face
+		1, 2, 6, 
+		2, 7, 6,	//Front Face
+		2, 3, 7,
+		3, 4, 7,	//Left Face
+		3, 0, 4,
+		4, 5, 6,	//Top Face
+		4, 6, 7
 	};
 
 	//	mIndexCount = sizeof(indices);
@@ -336,7 +394,7 @@ void Graphics::InitGeoBuffers()
 	//Creating an index buffer Description
 	D3D11_BUFFER_DESC ibd;
 	ibd.Usage = D3D11_USAGE_DEFAULT;
-	ibd.ByteWidth = sizeof(UINT) * std::size(indices);
+	ibd.ByteWidth = static_cast<UINT>(sizeof(UINT) * std::size(indices));
 	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	ibd.CPUAccessFlags = 0;
 	ibd.MiscFlags = 0;
@@ -400,7 +458,7 @@ void Graphics::InitConstBuffers()
 	XMMATRIX v = XMLoadFloat4x4(&mViewMatrix);
 	XMMATRIX p = XMLoadFloat4x4(&mProjMatrix);
 
-	mCB.mWorldView = w * v * p;
+	mCB.mWorldView = XMMatrixTranspose(w * v * p);
 
 	wrl::ComPtr<ID3D11Buffer> pConstantBuffer;
 

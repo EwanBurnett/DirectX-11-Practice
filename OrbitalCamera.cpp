@@ -7,7 +7,7 @@ OrbitalCamera::OrbitalCamera()
 	mPhi = 0.0f;
 	mTheta = 0.0f;
 
-	XMStoreFloat3(&mPosition, DirectX::XMVectorSet(0, 0, 5, 1));
+	XMStoreFloat3(&mPosition, DirectX::XMVectorSet(0, 0, -5, 1));
 	XMStoreFloat3(&mTarget, DirectX::XMVectorZero());
 	XMStoreFloat3(&mWorldUp, DirectX::XMVectorSet(0, 1, 0, 1));
 }
@@ -21,8 +21,7 @@ DirectX::XMMATRIX OrbitalCamera::GetCameraView()
 	DirectX::XMMATRIX v = DirectX::XMMatrixLookAtLH(pos, tgt, up);
 	DirectX::XMMATRIX y = DirectX::XMMatrixRotationRollPitchYaw(mPitch, -mYaw, mRoll);
 	DirectX::XMStoreFloat4x4(&mViewMatrix, 
-		v * 
-		y);
+		v * y);
 
 	return DirectX::XMLoadFloat4x4(&mViewMatrix);
 }
@@ -30,6 +29,7 @@ DirectX::XMMATRIX OrbitalCamera::GetCameraView()
 void OrbitalCamera::Orbit(float radius, float theta, float phi)
 {
 	if (radius <= 0) { radius = 0.1f; }
+
 	mRadius = radius;
 	mPhi = phi;
 	mTheta = theta;
@@ -46,4 +46,14 @@ void OrbitalCamera::Orbit(float radius, float theta, float phi)
 		);
 
 	DirectX::XMStoreFloat3(&mPosition, pos);
+}
+
+void OrbitalCamera::SetTargetPos(DirectX::FXMVECTOR pos)
+{
+	DirectX::XMStoreFloat3(&mTarget, pos);
+}
+
+void OrbitalCamera::SetWorldUp(DirectX::FXMVECTOR up)
+{
+	DirectX::XMStoreFloat3(&mWorldUp, up);
 }

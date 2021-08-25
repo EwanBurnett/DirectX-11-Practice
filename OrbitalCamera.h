@@ -11,6 +11,9 @@ public:
 
 	DirectX::XMMATRIX GetCameraView();
 	void Orbit(float radius, float theta, float phi);
+	void SetTargetPos(DirectX::FXMVECTOR pos);
+	void SetWorldUp(DirectX::FXMVECTOR up);
+	//void SetCameraOffset(DirectX::FXMVECTOR pos);
 private:
 	float mOrbitSpeed = 0.25f;	//Speed of the Camera 
 
@@ -25,6 +28,6 @@ private:
 	DirectX::XMFLOAT3 mPosition;
 	DirectX::XMFLOAT3 mTarget;
 	DirectX::XMFLOAT3 mWorldUp;
-
+	
 	DirectX::XMFLOAT4X4 mViewMatrix;
 };
