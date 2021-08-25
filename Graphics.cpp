@@ -19,6 +19,8 @@ bool Graphics::Init(HWND hWnd, UINT width, UINT height)
 	mClientHeight = height;
 	mAspectRatio = width / height;
 
+	
+	XMStoreFloat3(&mScale, XMVectorSet(0.2, 0.2, 0.2, 1));
 
 	//Init matrices
 	XMFLOAT4X4 I;
@@ -173,15 +175,28 @@ void Graphics::Update(float dt)
 	float speed = 5;
 	angle += 0.1 * speed * dt;
 	if (angle > 360) { angle = 0.0f; }
+
+	/*XMStoreFloat4x4(&mWorldMatrix,
+		XMMatrixTranspose(
+			XMMatrixTranslation(0, 0, 4)	*
+			XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1, 10)
+		));*/
+	XMVECTOR scale = XMLoadFloat3(&mScale);
+	XMVECTOR rotation = XMLoadFloat3(&mRotation);
+	XMVECTOR translation = XMLoadFloat3(&mTranslaton);
+
 	XMStoreFloat4x4(&mWorldMatrix, 	//W = SRT
-		XMMatrixTranslation(0, 0, 4)
+		XMMatrixScalingFromVector(scale)	*
+		XMMatrixRotationRollPitchYawFromVector(rotation)	*
+		XMMatrixTranslationFromVector(translation)
 	);
 
-	mArcBall.Orbit(18, angle - 180, 0.0f);
+	mArcBall.Orbit(mCameraPos.x, mCameraPos.y, mCameraPos.z);
 
 	XMStoreFloat4x4(&mViewMatrix, mArcBall.GetCameraView());
 
-	XMStoreFloat4x4(&mProjMatrix, XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1.0f, 20.0f));
+	float fov = 90;
+	XMStoreFloat4x4(&mProjMatrix, XMMatrixPerspectiveFovLH(XMConvertToRadians(fov), mAspectRatio, 1.0f, 20.0f));
 	//XMStoreFloat4x4(&mViewMatrix, XMMatrixTranspose(XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1, 10)));
 
 	InitConstBuffers();
@@ -194,6 +209,9 @@ void Graphics::Draw()
 
 	pImmContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	pImmContext->DrawIndexed(mIndexCount, 0, 0);
+
+	CreateGUI();
+
 	pSwapChain->Present(1u, 0);
 }
 
@@ -243,6 +261,26 @@ void Graphics::SetWireframeMode(bool mode)
 		pDevice->CreateRasterizerState(&rdSolid, &mRS);
 	}
 	pImmContext->RSSetState(mRS.Get());
+}
+
+void Graphics::CreateGUI()
+{
+
+
+	ImGui::NewFrame();
+	ImGui::Begin("DX11 Application");
+
+	ImGui::Text("Application Description");
+	ImGui::SliderFloat("Camera Distance", &mCameraPos.x, 0.1f, 20.0f);
+	ImGui::SliderAngle("Camera Orbit", &mCameraPos.y, -180.0f, 180.0f);
+	ImGui::SliderAngle("Camera Angle", &mCameraPos.z, -90.0f, 90.0f);
+	
+	ImGui::SliderAngle("Object Rotation Y", &mRotation.y, 0.0f, 360.0f);
+	ImGui::End();
+	ImGui::EndFrame();
+
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
 void Graphics::InitGeoBuffers()

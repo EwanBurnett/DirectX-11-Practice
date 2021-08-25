@@ -29,6 +29,7 @@ DirectX::XMMATRIX OrbitalCamera::GetCameraView()
 
 void OrbitalCamera::Orbit(float radius, float theta, float phi)
 {
+	if (radius <= 0) { radius = 0.1f; }
 	mRadius = radius;
 	mPhi = phi;
 	mTheta = theta;

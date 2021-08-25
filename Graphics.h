@@ -23,6 +23,7 @@ public:
 	void Draw();
 	void Clear(float r = 0.0f, float g = 0.0f, float b = 0.0f, float a = 1.0f);
 	void SetWireframeMode(bool mode);
+	void CreateGUI();
 
 	wrl::ComPtr<ID3D11Buffer> mVertexBuffer;
 	wrl::ComPtr<ID3D11Buffer> mIndexBuffer;
@@ -47,6 +48,12 @@ private:
 
 	OrbitalCamera mArcBall;
 	std::unique_ptr<GUI> mGui;
+
+	DirectX::XMFLOAT3 mScale;
+	DirectX::XMFLOAT3 mRotation;
+	DirectX::XMFLOAT3 mTranslaton;
+
+	DirectX::XMFLOAT3 mCameraPos;	//radius, theta, phi
 
 	DirectX::XMFLOAT4X4 mWorldMatrix;
 	DirectX::XMFLOAT4X4 mViewMatrix;

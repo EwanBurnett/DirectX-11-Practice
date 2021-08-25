@@ -51,21 +51,21 @@ void DoFrame()
 
     //Process if timer is unpaused
     if ((mWnd->Timer().IsPaused()) == false){
-
+        bool bShowGuiDemo = false;
 
         ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
-        ImGui::NewFrame();
 
         Update();
         mWnd->Gfx().Update(mWnd->Timer().DeltaTime());
 
-        mWnd->Gfx().Draw();
-        ImGui::ShowDemoWindow();    //IMGUI test
+        if (bShowGuiDemo) {
+            ImGui::ShowDemoWindow(&bShowGuiDemo);    //IMGUI test
+        }
 
-        ImGui::Render();
-        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+        mWnd->Gfx().Draw();
         
+
     }
     else {
         Sleep(100);
@@ -81,6 +81,6 @@ void Update()
     g = (sin( mWnd->Timer().GameTime()) + 1) / 2;
     b = (sin( mWnd->Timer().GameTime()) + 1) / 2;
 
-    mWnd->Gfx().Clear(r, g, b);
-   
+    //mWnd->Gfx().Clear(r, g, b);
+    mWnd->Gfx().Clear();
 }

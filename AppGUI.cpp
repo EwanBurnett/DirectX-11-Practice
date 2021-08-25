@@ -4,7 +4,7 @@ GUI::GUI()
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	//ImGui::SetCurrentContext(c);
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	ImGui::StyleColorsDark();
 }
 
