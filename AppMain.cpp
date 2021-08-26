@@ -1,4 +1,7 @@
-#include "Window.h"
+#include "App.h"
+#include "AppWindow.h"
+#include "imgui/imgui_impl_dx11.h"
+#include "imgui/imgui_impl_win32.h"
 #include <sstream>
 #include <memory>
 
@@ -19,7 +22,7 @@ int CALLBACK WinMain(
 {
     //Create the application window
     OutputDebugString(">> Creating App Window\n");
-    mWnd = std::make_unique<Window>(1280, 720, "DX11 Application");
+    mWnd = std::make_unique<Window>(1280, 720, "DX11 Box Demo");
 
     //Evaluate Messages
     BOOL gResult;
@@ -48,9 +51,23 @@ void DoFrame()
 
     //Process if timer is unpaused
     if ((mWnd->Timer().IsPaused()) == false){
+        bool bShowGuiDemo = false;
+
+        ImGui_ImplDX11_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+
+        mWnd->Gfx().Clear();
+
         Update();
-        mWnd->Gfx().DrawFrame();
-        mWnd->Gfx().EndFrame();
+        mWnd->Gfx().Update(mWnd->Timer().DeltaTime());
+
+        if (bShowGuiDemo) {
+            ImGui::ShowDemoWindow(&bShowGuiDemo);    //IMGUI test
+        }
+
+        mWnd->Gfx().Draw();
+        
+
     }
     else {
         Sleep(100);
@@ -66,6 +83,6 @@ void Update()
     g = (sin( mWnd->Timer().GameTime()) + 1) / 2;
     b = (sin( mWnd->Timer().GameTime()) + 1) / 2;
 
-    mWnd->Gfx().ClearBuffer(r, g, b);
-
+    //mWnd->Gfx().Clear(r, g, b);
+    
 }

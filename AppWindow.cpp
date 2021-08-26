@@ -1,7 +1,10 @@
-#include "Window.h"
+#include "AppWindow.h"
+#include <assert.h>
 
 //Window Class Singleton
 Window::WindowClass Window::WindowClass::wndClass;
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 const char* Window::WindowClass::GetName()
 {
@@ -63,11 +66,18 @@ Window::Window(int width, int height, const char* name):
     ShowWindow(hWnd, SW_SHOWDEFAULT);
 
     //Initialize our Graphics
-    mGfx = std::make_unique<Graphics>(hWnd, width, height);
+    mGfx = std::make_unique<Graphics>();
+    assert(mGfx->Init(hWnd, width, height));
+
+    //Initialize Window GUI
+    ImGui_ImplWin32_Init(hWnd);
+     
+
 }
 
 Window::~Window()
 {
+    ImGui_ImplWin32_Shutdown();
     DestroyWindow(hWnd);
 }
 
@@ -115,11 +125,22 @@ LRESULT Window::MsgProcess(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    
+    //IMGUI processes any messages first
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam)) {
+        return true;
+    }
 
     switch (msg) {
     case WM_CLOSE:                  //Windows messages are all macroed, so you don't need to remember each code. see https://wiki.winehq.org/List_Of_Windows_Messages
         PostQuitMessage(0xD3D11);         //Tells our application to terminate execution with a custom exit code.
+        break;
+
+    case WM_KEYDOWN:
+        Gfx().SetWireframeMode(true);
+        break;
+        
+    case WM_KEYUP:
+        Gfx().SetWireframeMode(false);
         break;
     }
 
