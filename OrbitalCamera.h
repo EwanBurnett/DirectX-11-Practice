@@ -11,6 +11,7 @@ public:
 
 	DirectX::XMMATRIX GetCameraView();
 	void Orbit(float radius, float theta, float phi);
+	void SetCameraPos(DirectX::FXMVECTOR pos);
 	void SetTargetPos(DirectX::FXMVECTOR pos);
 	void SetWorldUp(DirectX::FXMVECTOR up);
 	//void SetCameraOffset(DirectX::FXMVECTOR pos);
@@ -25,6 +26,7 @@ private:
 	float mPitch;		//Camera rotation Pitch
 	float mYaw;			//Camera rotation Yaw
 
+	DirectX::XMFLOAT3 mViewPos;
 	DirectX::XMFLOAT3 mPosition;
 	DirectX::XMFLOAT3 mTarget;
 	DirectX::XMFLOAT3 mWorldUp;

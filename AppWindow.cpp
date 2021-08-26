@@ -136,25 +136,12 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_KEYDOWN:
-        if (wParam == VK_SPACE) {
-            mTimer.Stop();
-            break;
-        }
-        else {
-            Gfx().SetWireframeMode(true);
-            break;
-        }
-
+        Gfx().SetWireframeMode(true);
+        break;
+        
     case WM_KEYUP:
-        if (wParam == VK_SPACE) {
-            mTimer.Start();
-            break;
-        }
-        else {
-            Gfx().SetWireframeMode(false);
-            break;
-        }
-
+        Gfx().SetWireframeMode(false);
+        break;
     }
 
     return DefWindowProc(hWnd, msg, wParam, lParam);

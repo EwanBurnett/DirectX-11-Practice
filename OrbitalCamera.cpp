@@ -41,11 +41,16 @@ void OrbitalCamera::Orbit(float radius, float theta, float phi)
 	
 	DirectX::XMVECTOR pos =
 		DirectX::XMVector3Transform(
-			DirectX::XMVectorSet(0.0f, 0.0f, -mRadius, 1.0f),
+			DirectX::XMVectorSet(mViewPos.x, mViewPos.y,  mViewPos.z - mRadius, 1.0f),
 			DirectX::XMMatrixRotationRollPitchYaw(mPhi, -mTheta, 0.0f)
 		);
 
 	DirectX::XMStoreFloat3(&mPosition, pos);
+}
+
+void OrbitalCamera::SetCameraPos(DirectX::FXMVECTOR pos)
+{
+	DirectX::XMStoreFloat3(&mViewPos, pos);
 }
 
 void OrbitalCamera::SetTargetPos(DirectX::FXMVECTOR pos)

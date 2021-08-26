@@ -22,7 +22,7 @@ int CALLBACK WinMain(
 {
     //Create the application window
     OutputDebugString(">> Creating App Window\n");
-    mWnd = std::make_unique<Window>(1280, 720, "DX11 Application");
+    mWnd = std::make_unique<Window>(1280, 720, "DX11 Box Demo");
 
     //Evaluate Messages
     BOOL gResult;
@@ -56,6 +56,8 @@ void DoFrame()
         ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
 
+        mWnd->Gfx().Clear();
+
         Update();
         mWnd->Gfx().Update(mWnd->Timer().DeltaTime());
 
@@ -82,5 +84,5 @@ void Update()
     b = (sin( mWnd->Timer().GameTime()) + 1) / 2;
 
     //mWnd->Gfx().Clear(r, g, b);
-    mWnd->Gfx().Clear();
+    
 }

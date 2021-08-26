@@ -54,6 +54,7 @@ private:
 	DirectX::XMFLOAT3 mTranslation;
 
 	DirectX::XMFLOAT3 mCameraPos;	//radius, theta, phi
+	DirectX::XMFLOAT3 mClearColor;
 
 	FLOAT mNearPlane;
 	FLOAT mFarPlane;
@@ -67,7 +68,7 @@ private:
 	UINT mIndexCount = 36;
 
 	BOOL mIsWireframeView;
-
+	BOOL bAutoMode = true;
 	FLOAT mClientWidth;
 	FLOAT mClientHeight;
 	FLOAT mAspectRatio;

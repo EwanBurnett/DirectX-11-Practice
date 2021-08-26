@@ -11,11 +11,12 @@ Graphics::Graphics()
 {
 	mFoV = 90.0f;
 	mNearPlane = 0.1f;
-	mFarPlane = 1000.0f;
+	mFarPlane = 10.0f;
 	mTimeScale = 1.0f;
+	mTranslation.x = 1.0f;
 
-	XMStoreFloat3(&mCameraPos, XMVectorSet(1.0f, 0, 0, 0));
-	XMStoreFloat3(&mScale, XMVectorReplicate(0.2f));
+	XMStoreFloat3(&mCameraPos, XMVectorSet(1.0f, 0, XMConvertToRadians(15.0f), 0));
+	XMStoreFloat3(&mScale, XMVectorReplicate(1.0f));
 
 	//Init matrices
 	XMFLOAT4X4 I;
@@ -185,12 +186,8 @@ void Graphics::Update(float dt)
 		angle = 0.0f; 
 	}
 
-	//mRotation.y = angle;
-	/*XMStoreFloat4x4(&mWorldMatrix,
-		XMMatrixTranspose(
-			XMMatrixTranslation(0, 0, 4)	*
-			XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1, 10)
-		));*/
+	if (bAutoMode) { mRotation.y = angle; };
+
 	XMVECTOR scale = XMLoadFloat3(&mScale);
 	XMVECTOR rotation = XMLoadFloat3(&mRotation);
 	XMVECTOR translation = XMLoadFloat3(&mTranslation);
@@ -206,14 +203,6 @@ void Graphics::Update(float dt)
 	XMStoreFloat4x4(&mViewMatrix, mArcBall.GetCameraView());
 
 	XMStoreFloat4x4(&mProjMatrix, XMMatrixPerspectiveFovLH(XMConvertToRadians(mFoV), mAspectRatio, mNearPlane, mFarPlane));
-	
-	//XMStoreFloat4x4(&mWorldMatrix, XMMatrixIdentity());
-	//XMVECTOR eyepos = XMVectorSet(0, 0, -207.0f, 0);
-	//XMVECTOR tgtpos = XMVectorSet(0, 0, 0, 0);
-	//XMVECTOR upvect = XMVectorSet(0, 1, 0, 0);
-	//XMStoreFloat4x4(&mViewMatrix, XMMatrixLookAtLH(eyepos, tgtpos, upvect));
-	
-	//XMStoreFloat4x4(&mViewMatrix, XMMatrixTranspose(XMMatrixPerspectiveLH(1.0f, mAspectRatio, 1, 10)));
 
 	InitConstBuffers();
 }
@@ -223,7 +212,7 @@ void Graphics::Draw()
 	//Binding view to Output Merger
 	pImmContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), nullptr); //mDepthStencilView.Get()
 
-	pImmContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	pImmContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	pImmContext->DrawIndexed(mIndexCount, 0, 0);
 
 	CreateGUI();
@@ -233,7 +222,12 @@ void Graphics::Draw()
 
 void Graphics::Clear(float r, float g, float b, float a)
 {
+	/*	Dynamic clear
 	const float colour[] = { r, g, b, a };
+	pImmContext->ClearRenderTargetView(mRenderTargetView.Get(), colour);
+	pImmContext->ClearDepthStencilView(mDepthStencilView.Get(), 0, 1, 0);
+	*/
+	const float colour[] = { mClearColor.x, mClearColor.y, mClearColor.z, 1.0 };
 	pImmContext->ClearRenderTargetView(mRenderTargetView.Get(), colour);
 	pImmContext->ClearDepthStencilView(mDepthStencilView.Get(), 0, 1, 0);
 }
@@ -289,31 +283,87 @@ void Graphics::CreateGUI()
 	static float vTarget[3] = { 0, 0, 0 };
 	static float vCamPos[3] = { 0, 0, -2 };
 
-	ImGui::NewFrame();
-	ImGui::Begin("DX11 Application");
-
-	ImGui::Text("Application Description");
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	ImGui::SliderFloat("Camera Distance", &mCameraPos.x, 0.1f, 20.0f);
-	ImGui::SliderAngle("Camera Orbit", &mCameraPos.y, -180.0f, 180.0f);
-	ImGui::SliderAngle("Camera Angle", &mCameraPos.z, -90.0f, 90.0f);
+	static float vColor[3] = { 0, 0, 0 };
 	
-	ImGui::SliderFloat3("Camera Position", vCamPos, -10, 10);
-	ImGui::SliderFloat3("Camera Target", vTarget, -10, 10);
-	ImGui::SliderFloat3("Camera Up", vWorldUp, 0, 1);
+	static float vNear = mNearPlane;
+	static float vFar = mFarPlane;
+	static int a = mIndexCount;
+
+	if ((mFarPlane - mNearPlane) <= 1.0f) {
+		mFarPlane += 1.0f;
+	}
+	ImGui::NewFrame();
+	
+	//Main Demo Panel
+	ImGui::Begin("DX11 Box Demo");
+
+	ImGui::Text("Box Demo by Ewan Burnett (2021)\nUse the controls to modify the position, orientation and scale of the box.\nYou can also adjust the other values to see how they affect the scene.");
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::BulletText("Hold down any key to show a wireframe view.");
 
 	ImGui::SliderFloat3("Object Scale", vScale, 0.1, 20);
 	ImGui::SliderFloat3("Object Rotation", vRotation, 0, 360);
 	ImGui::SliderFloat3("Object Translation", vTranslation, -20, 20);
 
-	ImGui::SliderFloat("Near Plane", &mNearPlane, 0.1f, 100.0f);
-	ImGui::SliderFloat("Far Plane", &mFarPlane, 0.1f, 100.0f);
+	ImGui::SliderFloat("Near Plane", &mNearPlane, 0.1f, 99.0f);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+		ImGui::TextUnformatted("The Closest a rendered object can be to the Camera");
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
+	
+	ImGui::SliderFloat("Far Plane", &mFarPlane, 1.0f, 100.0f);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+		ImGui::TextUnformatted("The Furthest a rendered object can be from the Camera.");
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
 	ImGui::SliderFloat("Field of View", &mFoV, 30.0f, 110.0f);
 
-	ImGui::Button("Auto Rotate");
+	if (ImGui::Button("Toggle Auto Rotate")) {
+		if (bAutoMode) { bAutoMode = false; }
+		else { bAutoMode = true; }
+	}
 	ImGui::SliderFloat("Timescale", &mTimeScale, 0.1f, 100.0f);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+		ImGui::TextUnformatted("The \'speed\' of the application.");
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
+	ImGui::SliderInt("Indices", &a, 0, 36);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+		ImGui::TextUnformatted("How many Indices are drawn. Modify this to see how DX11 constructs the box.");
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
 
 	ImGui::End();
+
+	//Camera Controls Panel
+	ImGui::Begin("Camera Controls");
+	ImGui::SliderFloat("Camera Distance", &mCameraPos.x, 0.1f, 20.0f);
+	ImGui::SliderAngle("Camera Orbit", &mCameraPos.y, -180.0f, 180.0f);
+	ImGui::SliderAngle("Camera Angle", &mCameraPos.z, -90.0f, 90.0f);
+
+	ImGui::SliderFloat3("Camera Position", vCamPos, -10, 10);
+	ImGui::SliderFloat3("Camera Target", vTarget, -10, 10);
+	ImGui::SliderFloat3("Camera Up", vWorldUp, 0, 1);
+
+	ImGui::ColorPicker3("Background Colour", vColor);
+	ImGui::End();
+
 	ImGui::EndFrame();
 
 	ImGui::Render();
@@ -326,6 +376,10 @@ void Graphics::CreateGUI()
 	mArcBall.SetTargetPos(tgt);
 	XMVECTOR up = XMVectorSet(vWorldUp[0], vWorldUp[1], vWorldUp[2], 1.0f);
 	mArcBall.SetWorldUp(up);
+	XMVECTOR pos = XMVectorSet(vCamPos[0], vCamPos[1], vCamPos[2], 1.0f);
+	mArcBall.SetCameraPos(pos);
+	mIndexCount = a;
+	mClearColor = { vColor[0], vColor[1], vColor[2] };
 }
 
 void Graphics::InitGeoBuffers()
@@ -333,14 +387,15 @@ void Graphics::InitGeoBuffers()
 	//Declare geometry vertices in local space
 	Vertex verts[] =
 	{
-		{XMFLOAT3(-1, -1, -1), XMFLOAT4(1, 1, 1, 1)},
-		{XMFLOAT3(1, -1, -1), XMFLOAT4(1, 1, 0, 1)},
-		{XMFLOAT3(1, -1, 1), XMFLOAT4(1, 0, 1, 1)},
-		{XMFLOAT3(-1, -1, 1), XMFLOAT4(0, 1, 1, 1)},
-		{XMFLOAT3(-1, 1, -1), XMFLOAT4(1, 0, 0, 1)},
-		{XMFLOAT3(1, 1, -1), XMFLOAT4(0, 1, 0, 1)},
-		{XMFLOAT3(1, 1, 1), XMFLOAT4(0, 0, 1, 1)},
-		{XMFLOAT3(-1, 1, 1), XMFLOAT4(0, 0, 0, 1)},
+		//Cube
+		{XMFLOAT3(-0.5, -0.75,	-0.5),		XMFLOAT4(1, 1, 1, 1)},		//White		0
+		{XMFLOAT3(0.5,	-0.75,	-0.5),		XMFLOAT4(1, 1, 0, 1)},		//Yellow	1
+		{XMFLOAT3(0.5,	-0.75,	0.5),		XMFLOAT4(1, 0, 1, 1)},		//Purple	2
+		{XMFLOAT3(-0.5,	-0.75,	0.5),		XMFLOAT4(0, 1, 1, 1)},		//Turquoise	3
+		{XMFLOAT3(-0.5, 0.75,	-0.5),		XMFLOAT4(1, 0, 0, 1)},		//Red		4
+		{XMFLOAT3(0.5,	0.75,	-0.5),		XMFLOAT4(0, 1, 0, 1)},		//Green		5
+		{XMFLOAT3(0.5,	0.75,	0.5),		XMFLOAT4(0, 0, 1, 1)},		//Blue		6
+		{XMFLOAT3(-0.5,	0.75,	0.5),		XMFLOAT4(0, 0, 0, 1)},		//Black		7
 	};
 
 
@@ -366,30 +421,20 @@ void Graphics::InitGeoBuffers()
 	UINT offset = 0;
 	pImmContext->IASetVertexBuffers(0, 1, mVB.GetAddressOf(), &strides, &offset);
 
-	//OutputDebugString(">> Vertex Buffer Bound to pipeline\n");
-	
-	//Creating an Index Buffer
-	
-	//OutputDebugString(">> Creating Index Buffer\n");
 
-	verts;
+	//Creating an Index Buffer
+
 	//Index list for our shape
-	UINT indices[36] = {
-		0, 2, 1,	//Bottom Face
-		0, 3, 2,
-		0, 5, 4,	//Back Face
-		0, 1, 5,
-		1, 6, 5,	//Right Face
-		1, 2, 6, 
-		2, 7, 6,	//Front Face
-		2, 3, 7,
-		3, 4, 7,	//Left Face
-		3, 0, 4,
-		4, 5, 6,	//Top Face
-		4, 6, 7
+	UINT indices[] = {
+		0, 1, 2,	0, 2, 3, //Bottom Face
+		0, 4, 5,	0, 5, 1, //Back Face
+		1, 5, 6,	1, 6, 2, //Right Face
+		2, 6, 7,	2, 7, 3, //Front Face
+		3, 7, 4,	3, 4, 0, //Left Face
+		4, 6, 5,	4, 7, 6, //Top Face
 	};
 
-	//	mIndexCount = sizeof(indices);
+	//mIndexCount = sizeof(indices);
 
 	//Creating an index buffer Description
 	D3D11_BUFFER_DESC ibd;
