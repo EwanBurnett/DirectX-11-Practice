@@ -1,1 +1,81 @@
-<mxfile host="app.diagrams.net" modified="2021-09-05T23:41:56.651Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36" version="15.0.6" etag="XKUwE9hEJiqagarf8gr6" type="github"><diagram id="vQeBguJPUF9MExsiDvc3">UzV2zq1wL0osyPDNT0nNUTV2VTV2LsrPL4GwciucU3NyVI0MMlNUjV1UjYwMgFjVyA2HrCFY1qAgsSg1rwSLBiADYTaQg2Y1AA==</diagram></mxfile>
+<mxfile host="app.diagrams.net" modified="2021-09-06T00:01:03.466Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36" etag="gqBbs6LtGN4Q0nTus2TX" version="15.0.6" type="github">
+  <diagram id="vQeBguJPUF9MExsiDvc3" name="Page-1">
+    <mxGraphModel dx="1422" dy="775" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-21" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="30" y="160" width="460" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-1" value="AppMain" style="html=1;" vertex="1" parent="VsL-hVIw4HREQHqLJqo1-21">
+          <mxGeometry x="60" y="30" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-2" value="App" style="html=1;" vertex="1" parent="VsL-hVIw4HREQHqLJqo1-21">
+          <mxGeometry x="60" y="180" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-3" value="Graphics" style="html=1;" vertex="1" parent="VsL-hVIw4HREQHqLJqo1-21">
+          <mxGeometry x="320" y="30" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-4" value="AppWindow" style="html=1;" vertex="1" parent="VsL-hVIw4HREQHqLJqo1-21">
+          <mxGeometry x="190" y="30" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-5" value="OrbitalCamera" style="html=1;" vertex="1" parent="VsL-hVIw4HREQHqLJqo1-21">
+          <mxGeometry x="60" y="110" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-7" value="Geometry" style="html=1;" vertex="1" parent="VsL-hVIw4HREQHqLJqo1-21">
+          <mxGeometry x="190" y="110" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-8" value="Actor" style="html=1;" vertex="1" parent="VsL-hVIw4HREQHqLJqo1-21">
+          <mxGeometry x="320" y="110" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-16" value="AppMain" style="html=1;" vertex="1" parent="VsL-hVIw4HREQHqLJqo1-21">
+          <mxGeometry x="60" y="30" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-20" value="Essential Components" style="swimlane;horizontal=0;" vertex="1" parent="VsL-hVIw4HREQHqLJqo1-21">
+          <mxGeometry width="460" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-23" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="510" y="190" width="335" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-6" value="FreeCamera" style="html=1;" vertex="1" parent="VsL-hVIw4HREQHqLJqo1-23">
+          <mxGeometry x="50" y="30" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-11" value="MeshLoader" style="html=1;" vertex="1" parent="VsL-hVIw4HREQHqLJqo1-23">
+          <mxGeometry x="50" y="105" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-12" value="Scene" style="html=1;" vertex="1" parent="VsL-hVIw4HREQHqLJqo1-23">
+          <mxGeometry x="190" y="30" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-15" value="Physics" style="html=1;" vertex="1" parent="VsL-hVIw4HREQHqLJqo1-23">
+          <mxGeometry x="190" y="105" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-22" value="Additional Components" style="swimlane;horizontal=0;metaEdit=0;dropTarget=1;collapsible=0;noLabel=0;treeFolding=1;" vertex="1" collapsed="1" parent="VsL-hVIw4HREQHqLJqo1-23">
+          <mxGeometry width="335" height="200" as="geometry">
+            <mxRectangle width="30" height="160" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-25" value="App" style="html=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="560" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-26" value="Graphics" style="html=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="750" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-27" value="AppWindow" style="html=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="610" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-28" value="OrbitalCamera" style="html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="840" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-29" value="Geometry" style="html=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="840" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-30" value="Actor" style="html=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="710" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VsL-hVIw4HREQHqLJqo1-31" value="AppMain" style="html=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="500" width="110" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
