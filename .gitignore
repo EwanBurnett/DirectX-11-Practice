@@ -92,6 +92,9 @@ StyleCopReport.xml
 *.svclog
 *.scc
 
+# Direct3D Compiled Shader Files
+* .cso
+
 # Chutzpah Test files
 _Chutzpah*
 
