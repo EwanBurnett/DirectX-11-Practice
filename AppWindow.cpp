@@ -66,8 +66,8 @@ Window::Window(int width, int height, const char* name):
     ShowWindow(hWnd, SW_SHOWDEFAULT);
 
     //Initialize our Graphics
-    mGfx = std::make_unique<Graphics>();
-    assert(mGfx->Init(hWnd, width, height));
+    //mGfx = std::make_unique<Graphics>();
+    //assert(mGfx->Init(hWnd, width, height));
 
     //Initialize Window GUI
     ImGui_ImplWin32_Init(hWnd);
@@ -81,15 +81,11 @@ Window::~Window()
     DestroyWindow(hWnd);
 }
 
-Graphics& Window::Gfx()
+HWND& Window::GetWndInstance()
 {
-    return(*mGfx);
+    return hWnd;
 }
 
-GameTimer& Window::Timer()
-{
-    return(mTimer);
-}
 
 LRESULT Window::MsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {

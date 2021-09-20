@@ -27,8 +27,7 @@ public:
     Window(int width, int height, const char* name);
     ~Window();
 
-    Graphics& Gfx();
-    GameTimer& Timer();
+    HWND& GetWndInstance();
 
 private:
     static LRESULT CALLBACK MsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -38,6 +37,6 @@ private:
     int width;
     int height;
     HWND hWnd;
-    std::unique_ptr<Graphics> mGfx;
-    GameTimer mTimer;
+    /*std::unique_ptr<Graphics> mGfx;
+    GameTimer mTimer;*/
 };
