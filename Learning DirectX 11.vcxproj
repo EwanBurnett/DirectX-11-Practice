@@ -198,8 +198,10 @@
       <CallingConvention Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">StdCall</CallingConvention>
       <CallingConvention Condition="'$(Configuration)|$(Platform)'=='Release|x64'">StdCall</CallingConvention>
     </ClCompile>
+    <ClCompile Include="ResourceManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Actor.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="AppGUI.h" />
     <ClInclude Include="imgui\imconfig.h" />
@@ -217,6 +219,7 @@
     <ClInclude Include="AppIncl.h" />
     <ClInclude Include="AppTimer.h" />
     <ClInclude Include="AppWindow.h" />
+    <ClInclude Include="ResourceManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">
