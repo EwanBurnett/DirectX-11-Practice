@@ -1,23 +1,23 @@
-#include "Actor.h"
+#include "Entity.h"
 
 using namespace DirectX;
-void Actor::SetID(UINT val)
+void Entity::SetID(UINT val)
 {
 	id = val;
 }
-UINT Actor::GetID()
+UINT Entity::GetID()
 {
 	return id;
 }
-void Actor::SetActive(bool state)
+void Entity::SetActive(bool state)
 {
-	isActive = state;
+	bIsActive = state;
 }
-bool Actor::GetActive()
+bool Entity::IsActive()
 {
-	return isActive;
+	return bIsActive;
 }
-DirectX::XMMATRIX Actor::GetWorldMatrix()
+DirectX::XMMATRIX Entity::GetWorldMatrix()
 {
 	XMVECTOR scale = XMLoadFloat3(&mTransform.scale);
 	XMVECTOR rotation = XMLoadFloat3(&mTransform.rotation);
@@ -34,6 +34,28 @@ DirectX::XMMATRIX Actor::GetWorldMatrix()
 	return world;
 }
 
-void Dummy::Update() {
+void Entity::Init()
+{
+}
 
+void Entity::Destroy()
+{
+}
+
+void Entity::Awake()
+{
+}
+
+void Entity::Sleep()
+{
+}
+
+void Entity::Update(float dt)
+{
+}
+
+void DebugEntity::Init() {
+	name = "DEBUG";
+	priority = 2;
+	OutputDebugString("Debug Entity Init Complete!");
 }

@@ -1,7 +1,7 @@
 #include "Graphics.h"
 #include <d3dcompiler.h>
 #include <string>
-#include "Actor.h"
+#include "Entity.h"
 
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
@@ -385,22 +385,22 @@ void Graphics::CreateGUI()
 
 void Graphics::InitGeoBuffers()
 {
-	Actor a;
+	/*Actor a;
 	a.mGeometry = Geometry::Cube;
-	Vertex *verts = &a.mGeometry.vertices[0];
-	////Declare geometry vertices in local space
-	//Vertex verts[] =
-	//{
-	//	//Cube
-	//	{XMFLOAT3(-0.5, -0.75,	-0.5),		XMFLOAT4(1, 1, 1, 1)},		//White		0
-	//	{XMFLOAT3(0.5,	-0.75,	-0.5),		XMFLOAT4(1, 1, 0, 1)},		//Yellow	1
-	//	{XMFLOAT3(0.5,	-0.75,	0.5),		XMFLOAT4(1, 0, 1, 1)},		//Purple	2
-	//	{XMFLOAT3(-0.5,	-0.75,	0.5),		XMFLOAT4(0, 1, 1, 1)},		//Turquoise	3
-	//	{XMFLOAT3(-0.5, 0.75,	-0.5),		XMFLOAT4(1, 0, 0, 1)},		//Red		4
-	//	{XMFLOAT3(0.5,	0.75,	-0.5),		XMFLOAT4(0, 1, 0, 1)},		//Green		5
-	//	{XMFLOAT3(0.5,	0.75,	0.5),		XMFLOAT4(0, 0, 1, 1)},		//Blue		6
-	//	{XMFLOAT3(-0.5,	0.75,	0.5),		XMFLOAT4(0, 0, 0, 1)},		//Black		7
-	//};
+	Vertex *verts = &a.mGeometry.vertices[0];*/
+	//Declare geometry vertices in local space
+	Vertex verts[] =
+	{
+		//Cube
+		{XMFLOAT3(-0.5, -0.75,	-0.5),		XMFLOAT4(1, 1, 1, 1)},		//White		0
+		{XMFLOAT3(0.5,	-0.75,	-0.5),		XMFLOAT4(1, 1, 0, 1)},		//Yellow	1
+		{XMFLOAT3(0.5,	-0.75,	0.5),		XMFLOAT4(1, 0, 1, 1)},		//Purple	2
+		{XMFLOAT3(-0.5,	-0.75,	0.5),		XMFLOAT4(0, 1, 1, 1)},		//Turquoise	3
+		{XMFLOAT3(-0.5, 0.75,	-0.5),		XMFLOAT4(1, 0, 0, 1)},		//Red		4
+		{XMFLOAT3(0.5,	0.75,	-0.5),		XMFLOAT4(0, 1, 0, 1)},		//Green		5
+		{XMFLOAT3(0.5,	0.75,	0.5),		XMFLOAT4(0, 0, 1, 1)},		//Blue		6
+		{XMFLOAT3(-0.5,	0.75,	0.5),		XMFLOAT4(0, 0, 0, 1)},		//Black		7
+	};
 
 
 	//Fill Vertex buffer description
@@ -429,17 +429,17 @@ void Graphics::InitGeoBuffers()
 	//Creating an Index Buffer
 
 	//Index list for our shape
-	//UINT indices[] = {
-	//	0, 1, 2,	0, 2, 3, //Bottom Face
-	//	0, 4, 5,	0, 5, 1, //Back Face
-	//	1, 5, 6,	1, 6, 2, //Right Face
-	//	2, 6, 7,	2, 7, 3, //Front Face
-	//	3, 7, 4,	3, 4, 0, //Left Face
-	//	4, 6, 5,	4, 7, 6, //Top Face
-	//};
+	UINT indices[] = {
+		0, 1, 2,	0, 2, 3, //Bottom Face
+		0, 4, 5,	0, 5, 1, //Back Face
+		1, 5, 6,	1, 6, 2, //Right Face
+		2, 6, 7,	2, 7, 3, //Front Face
+		3, 7, 4,	3, 4, 0, //Left Face
+		4, 6, 5,	4, 7, 6, //Top Face
+	};
 
 	
-	UINT *indices = &a.mGeometry.indices[0];
+	//UINT *indices = &a.mGeometry.indices[0];
 	
 
 	//mIndexCount = sizeof(indices);
@@ -447,7 +447,7 @@ void Graphics::InitGeoBuffers()
 	//Creating an index buffer Description
 	D3D11_BUFFER_DESC ibd;
 	ibd.Usage = D3D11_USAGE_DEFAULT;
-	ibd.ByteWidth = static_cast<UINT>(sizeof(UINT) * a.mGeometry.indices.size());
+	ibd.ByteWidth = sizeof(indices) * 8;
 	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	ibd.CPUAccessFlags = 0;
 	ibd.MiscFlags = 0;

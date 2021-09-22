@@ -34,10 +34,10 @@ private:
 	void InitShaders();
 	void InitConstBuffers();
 
-	/*struct Vertex {
+	struct Vertex {
 		DirectX::XMFLOAT3 position;
 		DirectX::XMFLOAT4 color;
-	};*/
+	};
 
 private:
 	wrl::ComPtr<ID3D11Device> pDevice;

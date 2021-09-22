@@ -132,11 +132,11 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_KEYDOWN:
-        Gfx().SetWireframeMode(true);
+        //Gfx().SetWireframeMode(true);
         break;
         
     case WM_KEYUP:
-        Gfx().SetWireframeMode(false);
+        //Gfx().SetWireframeMode(false);
         break;
     }
 

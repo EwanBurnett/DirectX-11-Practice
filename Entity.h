@@ -1,7 +1,8 @@
 #pragma once
 #include "AppIncl.h"
 #include <DirectXMath.h>
-#include "Geometry.h"
+#include <string>
+//#include "Geometry.h"
 
 struct Transform {
 	DirectX::XMFLOAT3 scale;
@@ -9,29 +10,30 @@ struct Transform {
 	DirectX::XMFLOAT3 translation;
 };
 
-class Actor {
+class Entity {
 public:
-	Actor() = default;
-	~Actor() = default;
+	Entity() = default;
+	~Entity() = default;
 
 	void SetID(UINT val);
 	UINT GetID();
 	void SetActive(bool state);
-	bool GetActive();
+	bool IsActive();
 
 	DirectX::XMMATRIX GetWorldMatrix();
 	
 public:
-	virtual void OnSpawn();		//Called when the actor is spawned.
-	virtual void OnDespawn();	//Called when the actor is despawned
+	virtual void Init();		//Called when the actor is spawned.
+	virtual void Destroy();		//Called when the actor is despawned
 	virtual void Awake();		//Called when the actor activates.
 	virtual void Sleep();		//Called when the actor deactivates.
-	virtual void Update();		//Called once per frame.
+	virtual void Update(float dt);		//Called once per frame.
 
 protected:
-	const char* name;
+	std::string name;
 	UINT id;
-	bool isActive;
+	UINT priority;
+	bool bIsActive;
 
 	Transform mTransform = {
 			{1, 1, 1},	//Scaling
@@ -42,6 +44,7 @@ protected:
 	DirectX::XMFLOAT4X4 mWorldMatrix;
 };
 
-class Dummy : Actor {
-	void Update();
+class DebugEntity : public Entity {
+public:
+	void Init() override;
 };

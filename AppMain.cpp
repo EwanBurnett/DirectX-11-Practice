@@ -1,5 +1,6 @@
 #include "app.h"
 #include "appwindow.h"
+#include "EntityPool.h"
 #include "imgui/imgui_impl_dx11.h"
 #include "imgui/imgui_impl_win32.h"
 #include <sstream>
@@ -95,6 +96,7 @@ void EndFrame();	//End processing the current frame
 
 std::unique_ptr<Window> mWindow;
 std::unique_ptr<Graphics> mGraphics;
+std::unique_ptr<EntityPool> mPool;
 //ResourceManager mResources;
 //Timer timer;
 
@@ -117,10 +119,26 @@ int CALLBACK WinMain(
 
 bool Init() {
 	
-	mWindow = std::make_unique<Window>();
-	mGraphics = std::make_unique<Graphics>();
-	//mResources.Init();
+	//mWindow = std::make_unique<Window>(1280, 720, "DX11 Box Demo");
+	//mGraphics = std::make_unique<Graphics>();
+	mPool = std::make_unique<EntityPool>();
 
+	Entity* a = new DebugEntity();
+	a->Init();
+
+	for (int i = 0; i < 60; i++) {
+		mPool->Allocate(a, 9);
+	}
+
+	Entity* b = new Entity();
+	for (int i = 0; i < 20; i++) {
+		mPool->Allocate(b, 7);
+	}
+	
+	Entity* c = new Entity();
+	for (int i = 0; i < 30; i++) {
+		mPool->Allocate(b, 14);
+	}
 
 	//Timer.Reset();
 	return false;
