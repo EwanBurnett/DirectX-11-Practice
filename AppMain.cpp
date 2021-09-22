@@ -112,7 +112,9 @@ int CALLBACK WinMain(
 	}
 
 	//Message Loop
-
+	while (true) {
+		DoFrame();
+	}
 
 	return 0;
 }
@@ -141,5 +143,18 @@ bool Init() {
 	}
 
 	//Timer.Reset();
-	return false;
+	return true;
+}
+
+void DoFrame()
+{
+	/*ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();*/
+
+	//Clear
+
+	//Update
+	mPool->Update(0);
+
+	//Draw
 }
