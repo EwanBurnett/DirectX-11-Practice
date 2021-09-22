@@ -22,11 +22,17 @@ void EntityPool::Allocate(Entity* entity, int priority)
 
         //If there's a free entity, set and activate it
         if (!ent->IsActive()) {
-            std::pair<Entity*, int>a(entity, priority);
-            Entities.at(i) = a;
+            entity->Init();
 
-            ent->Init();
-            ent->SetID(i);
+            std::pair<Entity*, int> found;
+            found.first = entity;
+            found.second = priority;
+
+            found.first->Init();
+            found.first->SetActive(true);
+            found.first->SetID(i);
+
+            Entities.at(i) = found;
     
             return;
         }

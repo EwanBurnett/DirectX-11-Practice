@@ -124,7 +124,7 @@ bool Init() {
 	mPool = std::make_unique<EntityPool>();
 
 	Entity* a = new DebugEntity();
-	a->Init();
+	//a->Init();
 
 	for (int i = 0; i < 60; i++) {
 		mPool->Allocate(a, 9);
