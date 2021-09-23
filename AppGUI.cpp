@@ -2,13 +2,13 @@
 
 GUI::GUI()
 {
-	IMGUI_CHECKVERSION();
+	/*IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	ImGui::StyleColorsDark();
+	ImGui::StyleColorsDark();*/
 }
 
 GUI::~GUI()
 {
-	ImGui::DestroyContext();
+	/*ImGui::DestroyContext();*/
 }

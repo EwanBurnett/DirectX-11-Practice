@@ -4,7 +4,7 @@
 //Window Class Singleton
 Window::WindowClass Window::WindowClass::wndClass;
 
-//extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 const char* Window::WindowClass::GetName()
 {
@@ -74,17 +74,8 @@ void Window::Init(int width, int height, const char* name)
         nullptr, nullptr, WindowClass::GetInstance(), this
     );
 
-    
-
     //Show the window
     ShowWindow(hWnd, SW_SHOWDEFAULT);
-
-    //Initialize our Graphics
-    //mGfx = std::make_unique<Graphics>();
-    //assert(mGfx->Init(hWnd, width, height));
-
-
-
 
 }
 
@@ -129,9 +120,9 @@ LRESULT Window::MsgProcess(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     //IMGUI processes any messages first
-    /*if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam)) {
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam)) {
         return true;
-    }*/
+    }
 
     switch (msg) {
     case WM_CLOSE:                  //Windows messages are all macroed, so you don't need to remember each code. see https://wiki.winehq.org/List_Of_Windows_Messages

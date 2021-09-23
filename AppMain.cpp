@@ -91,6 +91,7 @@
 
 
 bool Init();
+void CleanUp();
 void DoFrame();		//Process the current frame
 
 std::unique_ptr<Window> mWindow;
@@ -131,24 +132,28 @@ bool Init() {
 	UINT winWidth = 1280;
 	UINT winHeight = 720;
 
+	//Init ImGUI
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGui::StyleColorsDark();
+
 	//Init Window
 	mWindow = std::make_unique<Window>();
 	mWindow->Init(winWidth, winHeight, "DX11 Box Demo");
 	
-	
+	//Initialize Window GUI
+	ImGui_ImplWin32_Init(mWindow->GetWndInstance());
 
+	
 	//Init Graphics
 	mGraphics = std::make_unique<Graphics>();
-
-	//Initialize Window GUI
-	//ImGui_ImplWin32_Init(mWindow->GetWndInstance());
 	mGraphics->Init(mWindow->GetWndInstance(), winWidth, winHeight);
 
 	//Init Entity pool
 	mPool = std::make_unique<EntityPool>();
 
 	Entity* a = new DebugEntity();
-	//a->Init();
 
 	for (int i = 0; i < 60; i++) {
 		mPool->Allocate(a, 9);
@@ -168,15 +173,26 @@ bool Init() {
 	return true;
 }
 
+void CleanUp()
+{
+	ImGui::DestroyContext();
+	mPool->~EntityPool();
+	mGraphics->~Graphics();
+	mWindow->~Window();
+}
+
 void DoFrame()
 {
-	//ImGui_ImplDX11_NewFrame();
-	//ImGui_ImplWin32_NewFrame();
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
 
 	//Clear
+	mGraphics->Clear();
 
 	//Update
 	mPool->Update(0);
+	mGraphics->Update(0);
 
 	//Draw
+	mGraphics->Draw();
 }

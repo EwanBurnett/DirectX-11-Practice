@@ -168,8 +168,8 @@ bool Graphics::Init(HWND hWnd, UINT width, UINT height)
 	pImmContext->RSSetViewports(1, &vp);
 
 	//init GUI
-	//mGui = std::make_unique<GUI>();
-	//ImGui_ImplDX11_Init(pDevice.Get(), pImmContext.Get());
+	mGui = std::make_unique<GUI>();
+	ImGui_ImplDX11_Init(pDevice.Get(), pImmContext.Get());
 
 	//InitGeoBuffers();
 	InitShaders();
@@ -216,19 +216,15 @@ void Graphics::Draw()
 	pImmContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	pImmContext->DrawIndexed(mIndexCount, 0, 0);
 
-	//CreateGUI();
+	CreateGUI();
 
 	pSwapChain->Present(1u, 0);
 }
 
-void Graphics::Clear(float r, float g, float b, float a)
-{
-	/*	Dynamic clear
+
+
+void Graphics::Clear(float r, float g, float b, float a){
 	const float colour[] = { r, g, b, a };
-	pImmContext->ClearRenderTargetView(mRenderTargetView.Get(), colour);
-	pImmContext->ClearDepthStencilView(mDepthStencilView.Get(), 0, 1, 0);
-	*/
-	const float colour[] = { mClearColor.x, mClearColor.y, mClearColor.z, 1.0 };
 	pImmContext->ClearRenderTargetView(mRenderTargetView.Get(), colour);
 	pImmContext->ClearDepthStencilView(mDepthStencilView.Get(), 0, 1, 0);
 }
@@ -273,115 +269,115 @@ void Graphics::SetWireframeMode(bool mode)
 	}
 	pImmContext->RSSetState(mRS.Get());
 }
-//
-//void Graphics::CreateGUI()
-//{
-//	static float vScale[3] = { mScale.x, mScale.y, mScale.z };
-//	static float vRotation[3] = { mRotation.x, mRotation.y, mRotation.z };
-//	static float vTranslation[3] = { mTranslation.x, mTranslation.y, mTranslation.z };
-//
-//	static float vWorldUp[3] = { 0, 1, 0 };
-//	static float vTarget[3] = { 0, 0, 0 };
-//	static float vCamPos[3] = { 0, 0, -2 };
-//
-//	static float vColor[3] = { 0, 0, 0 };
-//	
-//	static float vNear = mNearPlane;
-//	static float vFar = mFarPlane;
-//	static int a = mIndexCount;
-//
-//	if ((mFarPlane - mNearPlane) <= 1.0f) {
-//		mFarPlane += 1.0f;
-//	}
-//	ImGui::NewFrame();
-//	
-//	//Main Demo Panel
-//	ImGui::Begin("DX11 Box Demo");
-//
-//	ImGui::Text("Box Demo by Ewan Burnett (2021)\nUse the controls to modify the position, orientation and scale of the box.\nYou can also adjust the other values to see how they affect the scene.");
-//	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-//	ImGui::BulletText("Hold down any key to show a wireframe view.");
-//
-//	ImGui::SliderFloat3("Object Scale", vScale, 0.1, 20);
-//	ImGui::SliderFloat3("Object Rotation", vRotation, 0, 360);
-//	ImGui::SliderFloat3("Object Translation", vTranslation, -20, 20);
-//
-//	ImGui::SliderFloat("Near Plane", &mNearPlane, 0.1f, 99.0f);
-//	if (ImGui::IsItemHovered())
-//	{
-//		ImGui::BeginTooltip();
-//		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-//		ImGui::TextUnformatted("The Closest a rendered object can be to the Camera");
-//		ImGui::PopTextWrapPos();
-//		ImGui::EndTooltip();
-//	}
-//	
-//	ImGui::SliderFloat("Far Plane", &mFarPlane, 1.0f, 100.0f);
-//	if (ImGui::IsItemHovered())
-//	{
-//		ImGui::BeginTooltip();
-//		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-//		ImGui::TextUnformatted("The Furthest a rendered object can be from the Camera.");
-//		ImGui::PopTextWrapPos();
-//		ImGui::EndTooltip();
-//	}
-//	ImGui::SliderFloat("Field of View", &mFoV, 30.0f, 110.0f);
-//
-//	if (ImGui::Button("Toggle Auto Rotate")) {
-//		if (bAutoMode) { bAutoMode = false; }
-//		else { bAutoMode = true; }
-//	}
-//	ImGui::SliderFloat("Timescale", &mTimeScale, 0.1f, 100.0f);
-//	if (ImGui::IsItemHovered())
-//	{
-//		ImGui::BeginTooltip();
-//		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-//		ImGui::TextUnformatted("The \'speed\' of the application.");
-//		ImGui::PopTextWrapPos();
-//		ImGui::EndTooltip();
-//	}
-//	ImGui::SliderInt("Indices", &a, 0, 36);
-//	if (ImGui::IsItemHovered())
-//	{
-//		ImGui::BeginTooltip();
-//		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-//		ImGui::TextUnformatted("How many Indices are drawn. Modify this to see how DX11 constructs the box.");
-//		ImGui::PopTextWrapPos();
-//		ImGui::EndTooltip();
-//	}
-//
-//	ImGui::End();
-//
-//	//Camera Controls Panel
-//	ImGui::Begin("Camera Controls");
-//	ImGui::SliderFloat("Camera Distance", &mCameraPos.x, 0.1f, 20.0f);
-//	ImGui::SliderAngle("Camera Orbit", &mCameraPos.y, -180.0f, 180.0f);
-//	ImGui::SliderAngle("Camera Angle", &mCameraPos.z, -90.0f, 90.0f);
-//
-//	ImGui::SliderFloat3("Camera Position", vCamPos, -10, 10);
-//	ImGui::SliderFloat3("Camera Target", vTarget, -10, 10);
-//	ImGui::SliderFloat3("Camera Up", vWorldUp, 0, 1);
-//
-//	ImGui::ColorPicker3("Background Colour", vColor);
-//	ImGui::End();
-//
-//	ImGui::EndFrame();
-//
-//	ImGui::Render();
-//	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-//
-//	mScale = { vScale[0], vScale[1], vScale[2] };
-//	mRotation = { XMConvertToRadians( vRotation[0]), XMConvertToRadians(vRotation[1]), XMConvertToRadians(vRotation[2]) };
-//	mTranslation = { vTranslation[0], vTranslation[1], vTranslation[2] };
-//	XMVECTOR tgt = XMVectorSet(vTarget[0], vTarget[1], vTarget[2], 1.0f);
-//	mArcBall.SetTargetPos(tgt);
-//	XMVECTOR up = XMVectorSet(vWorldUp[0], vWorldUp[1], vWorldUp[2], 1.0f);
-//	mArcBall.SetWorldUp(up);
-//	XMVECTOR pos = XMVectorSet(vCamPos[0], vCamPos[1], vCamPos[2], 1.0f);
-//	mArcBall.SetCameraPos(pos);
-//	mIndexCount = a;
-//	mClearColor = { vColor[0], vColor[1], vColor[2] };
-//}
+
+void Graphics::CreateGUI()
+{
+	static float vScale[3] = { mScale.x, mScale.y, mScale.z };
+	static float vRotation[3] = { mRotation.x, mRotation.y, mRotation.z };
+	static float vTranslation[3] = { mTranslation.x, mTranslation.y, mTranslation.z };
+
+	static float vWorldUp[3] = { 0, 1, 0 };
+	static float vTarget[3] = { 0, 0, 0 };
+	static float vCamPos[3] = { 0, 0, -2 };
+
+	static float vColor[3] = { 0, 0, 0 };
+	
+	static float vNear = mNearPlane;
+	static float vFar = mFarPlane;
+	static int a = mIndexCount;
+
+	if ((mFarPlane - mNearPlane) <= 1.0f) {
+		mFarPlane += 1.0f;
+	}
+	ImGui::NewFrame();
+	
+	//Main Demo Panel
+	ImGui::Begin("DX11 Box Demo");
+
+	ImGui::Text("Box Demo by Ewan Burnett (2021)\nUse the controls to modify the position, orientation and scale of the box.\nYou can also adjust the other values to see how they affect the scene.");
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::BulletText("Hold down any key to show a wireframe view.");
+
+	ImGui::SliderFloat3("Object Scale", vScale, 0.1, 20);
+	ImGui::SliderFloat3("Object Rotation", vRotation, 0, 360);
+	ImGui::SliderFloat3("Object Translation", vTranslation, -20, 20);
+
+	ImGui::SliderFloat("Near Plane", &mNearPlane, 0.1f, 99.0f);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+		ImGui::TextUnformatted("The Closest a rendered object can be to the Camera");
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
+	
+	ImGui::SliderFloat("Far Plane", &mFarPlane, 1.0f, 100.0f);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+		ImGui::TextUnformatted("The Furthest a rendered object can be from the Camera.");
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
+	ImGui::SliderFloat("Field of View", &mFoV, 30.0f, 110.0f);
+
+	if (ImGui::Button("Toggle Auto Rotate")) {
+		if (bAutoMode) { bAutoMode = false; }
+		else { bAutoMode = true; }
+	}
+	ImGui::SliderFloat("Timescale", &mTimeScale, 0.1f, 100.0f);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+		ImGui::TextUnformatted("The \'speed\' of the application.");
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
+	ImGui::SliderInt("Indices", &a, 0, 36);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+		ImGui::TextUnformatted("How many Indices are drawn. Modify this to see how DX11 constructs the box.");
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
+
+	ImGui::End();
+
+	//Camera Controls Panel
+	ImGui::Begin("Camera Controls");
+	ImGui::SliderFloat("Camera Distance", &mCameraPos.x, 0.1f, 20.0f);
+	ImGui::SliderAngle("Camera Orbit", &mCameraPos.y, -180.0f, 180.0f);
+	ImGui::SliderAngle("Camera Angle", &mCameraPos.z, -90.0f, 90.0f);
+
+	ImGui::SliderFloat3("Camera Position", vCamPos, -10, 10);
+	ImGui::SliderFloat3("Camera Target", vTarget, -10, 10);
+	ImGui::SliderFloat3("Camera Up", vWorldUp, 0, 1);
+
+	ImGui::ColorPicker3("Background Colour", vColor);
+	ImGui::End();
+
+	ImGui::EndFrame();
+
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+	mScale = { vScale[0], vScale[1], vScale[2] };
+	mRotation = { XMConvertToRadians( vRotation[0]), XMConvertToRadians(vRotation[1]), XMConvertToRadians(vRotation[2]) };
+	mTranslation = { vTranslation[0], vTranslation[1], vTranslation[2] };
+	XMVECTOR tgt = XMVectorSet(vTarget[0], vTarget[1], vTarget[2], 1.0f);
+	mArcBall.SetTargetPos(tgt);
+	XMVECTOR up = XMVectorSet(vWorldUp[0], vWorldUp[1], vWorldUp[2], 1.0f);
+	mArcBall.SetWorldUp(up);
+	XMVECTOR pos = XMVectorSet(vCamPos[0], vCamPos[1], vCamPos[2], 1.0f);
+	mArcBall.SetCameraPos(pos);
+	mIndexCount = a;
+	mClearColor = { vColor[0], vColor[1], vColor[2] };
+}
 
 void Graphics::InitGeoBuffers()
 {
