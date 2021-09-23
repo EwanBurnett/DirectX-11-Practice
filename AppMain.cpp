@@ -112,8 +112,17 @@ int CALLBACK WinMain(
 	}
 
 	//Message Loop
-	while (true) {
-		DoFrame();
+	BOOL gResult;
+	MSG msg = { 0 };
+
+	while (msg.message != WM_QUIT) {
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
+		else {
+			DoFrame();
+		}
 	}
 
 	return 0;
@@ -148,8 +157,8 @@ bool Init() {
 
 void DoFrame()
 {
-	/*ImGui_ImplDX11_NewFrame();
-	ImGui_ImplWin32_NewFrame();*/
+	//ImGui_ImplDX11_NewFrame();
+	//ImGui_ImplWin32_NewFrame();
 
 	//Clear
 

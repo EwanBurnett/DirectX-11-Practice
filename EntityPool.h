@@ -12,6 +12,6 @@ public:
     virtual void Update(float dt);
     
 private:
-    static const int EntityLimit{ 500 };
+    static const int EntityLimit{ 50 };
     std::vector<std::pair<Entity*, int>> Entities;
 };

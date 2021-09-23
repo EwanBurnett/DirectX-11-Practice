@@ -20,13 +20,13 @@ void EntityPool::Allocate(Entity* entity, int priority)
         Entity* ent = Entities.at(i).first;
         UINT pri = Entities.at(i).second;
 
+        std::pair<Entity*, int> found;
+        found.first = entity;
+        found.second = priority;
+
         //If there's a free entity, set and activate it
         if (!ent->IsActive()) {
             entity->Init();
-
-            std::pair<Entity*, int> found;
-            found.first = entity;
-            found.second = priority;
 
             found.first->Init();
             found.first->SetActive(true);
@@ -39,15 +39,10 @@ void EntityPool::Allocate(Entity* entity, int priority)
 
         //Else, find an entity of a lower priority, and replace it.
         else {
-            //TODO: Sort the array before iteration
-            for (int j = 0; j < Entities.size(); j++) {
-                UINT sPri = Entities.at(j).second;
-                if (sPri <= pri) {
-                    Entities.at(j) = Entities.at(i);    //Set the new entity pair
-                }
+            if (priority >= pri) {
+                Entities.at(i) = found;    //Set the new entity pair
             }
         }
-
     }
 }
 
