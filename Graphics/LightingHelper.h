@@ -4,6 +4,15 @@
 
 using namespace DirectX;
 
+struct Material {
+	Material() { ZeroMemory(this, sizeof(this)); }
+
+	XMFLOAT4 Ambient;
+	XMFLOAT4 Diffuse;
+	XMFLOAT4 Specular;
+	XMFLOAT4 Reflect;
+};
+
 //Directional Lights shine in parallel over the whole scene.
 struct DirectionalLight {
 	DirectionalLight() { ZeroMemory(this, sizeof(this)); }
