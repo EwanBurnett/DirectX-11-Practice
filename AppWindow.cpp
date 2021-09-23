@@ -4,7 +4,7 @@
 //Window Class Singleton
 Window::WindowClass Window::WindowClass::wndClass;
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+//extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 const char* Window::WindowClass::GetName()
 {
@@ -41,9 +41,21 @@ Window::WindowClass::~WindowClass()
     UnregisterClass(wndClassName,  hInst);
 }
 
-Window::Window(int width, int height, const char* name):
-    width(width), height(height)
+Window::Window()
 {
+}
+
+Window::~Window()
+{
+    ImGui_ImplWin32_Shutdown();
+    DestroyWindow(hWnd);
+}
+
+void Window::Init(int width, int height, const char* name)
+{
+    this->width = width;
+    this->height = height;
+
     //Calculates window size based on desired client region size
     RECT wr;
     wr.left = 100;
@@ -61,7 +73,9 @@ Window::Window(int width, int height, const char* name):
         CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
         nullptr, nullptr, WindowClass::GetInstance(), this
     );
+
     
+
     //Show the window
     ShowWindow(hWnd, SW_SHOWDEFAULT);
 
@@ -69,16 +83,9 @@ Window::Window(int width, int height, const char* name):
     //mGfx = std::make_unique<Graphics>();
     //assert(mGfx->Init(hWnd, width, height));
 
-    //Initialize Window GUI
-    ImGui_ImplWin32_Init(hWnd);
-     
 
-}
 
-Window::~Window()
-{
-    ImGui_ImplWin32_Shutdown();
-    DestroyWindow(hWnd);
+
 }
 
 HWND& Window::GetWndInstance()
@@ -122,9 +129,9 @@ LRESULT Window::MsgProcess(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     //IMGUI processes any messages first
-    if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam)) {
+    /*if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam)) {
         return true;
-    }
+    }*/
 
     switch (msg) {
     case WM_CLOSE:                  //Windows messages are all macroed, so you don't need to remember each code. see https://wiki.winehq.org/List_Of_Windows_Messages
@@ -132,11 +139,11 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_KEYDOWN:
-        //Gfx().SetWireframeMode(true);
+        //OnKeyPressed(lParam);
         break;
         
     case WM_KEYUP:
-        //Gfx().SetWireframeMode(false);
+        //OnKeyReleased(lParam);
         break;
     }
 

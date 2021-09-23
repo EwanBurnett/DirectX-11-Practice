@@ -4,6 +4,7 @@
 #include "AppTimer.h"
 #include "imgui/imgui_impl_win32.h"
 #include <memory>
+#include "App.h"
 
 class Window {
     
@@ -18,15 +19,16 @@ class Window {
         WindowClass();
         ~WindowClass();
 
-        static constexpr const char* wndClassName = "Knight DX11 Engine Window";
+        static constexpr const char* wndClassName = "Graphics Window";
         static WindowClass wndClass;
         HINSTANCE hInst;
     };
 
 public:
-    Window(int width, int height, const char* name);
+    Window();
     ~Window();
 
+    void Init(int width, int height, const char* name);
     HWND& GetWndInstance();
 
 private:

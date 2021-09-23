@@ -24,7 +24,7 @@ public:
 	void Draw();
 	void Clear(float r = 0.0f, float g = 0.0f, float b = 0.0f, float a = 1.0f);
 	void SetWireframeMode(bool mode);
-	void CreateGUI();
+	//void CreateGUI();
 
 	wrl::ComPtr<ID3D11Buffer> mVertexBuffer;
 	wrl::ComPtr<ID3D11Buffer> mIndexBuffer;

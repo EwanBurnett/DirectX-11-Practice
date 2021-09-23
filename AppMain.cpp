@@ -1,8 +1,8 @@
 #include "app.h"
 #include "appwindow.h"
 #include "EntityPool.h"
-#include "imgui/imgui_impl_dx11.h"
-#include "imgui/imgui_impl_win32.h"
+//#include "imgui/imgui_impl_dx11.h"
+//#include "imgui/imgui_impl_win32.h"
 #include <sstream>
 #include <memory>
 
@@ -91,8 +91,7 @@
 
 
 bool Init();
-void DoFrame();		//Begin processing the current frame
-void EndFrame();	//End processing the current frame
+void DoFrame();		//Process the current frame
 
 std::unique_ptr<Window> mWindow;
 std::unique_ptr<Graphics> mGraphics;
@@ -129,9 +128,23 @@ int CALLBACK WinMain(
 }
 
 bool Init() {
+	UINT winWidth = 1280;
+	UINT winHeight = 720;
+
+	//Init Window
+	mWindow = std::make_unique<Window>();
+	mWindow->Init(winWidth, winHeight, "DX11 Box Demo");
 	
-	//mWindow = std::make_unique<Window>(1280, 720, "DX11 Box Demo");
-	//mGraphics = std::make_unique<Graphics>();
+	
+
+	//Init Graphics
+	mGraphics = std::make_unique<Graphics>();
+
+	//Initialize Window GUI
+	//ImGui_ImplWin32_Init(mWindow->GetWndInstance());
+	mGraphics->Init(mWindow->GetWndInstance(), winWidth, winHeight);
+
+	//Init Entity pool
 	mPool = std::make_unique<EntityPool>();
 
 	Entity* a = new DebugEntity();
