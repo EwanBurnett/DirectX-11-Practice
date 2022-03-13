@@ -69,6 +69,12 @@
     <ClCompile Include="AppGUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphics.h">
@@ -122,12 +128,24 @@
     <ClInclude Include="AppGUI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="VertexShader.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
     <FxCompile Include="PixelShader.hlsl">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
+    <FxCompile Include="LightHelper.fx">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
+    <FxCompile Include="Basic.fx">
       <Filter>Shader Files</Filter>
     </FxCompile>
   </ItemGroup>

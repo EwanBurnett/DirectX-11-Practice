@@ -1,6 +1,9 @@
 #include "Graphics.h"
 #include <d3dcompiler.h>
 #include <string>
+#include "Entity.h"
+#include <d3dx11effect.h>
+//#include <d3dx11global.h>
 
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
@@ -14,7 +17,7 @@ Graphics::Graphics()
 	mFarPlane = 10.0f;
 	mTimeScale = 1.0f;
 	mTranslation.x = 1.0f;
-
+	
 	XMStoreFloat3(&mCameraPos, XMVectorSet(1.0f, 0, XMConvertToRadians(15.0f), 0));
 	XMStoreFloat3(&mScale, XMVectorReplicate(1.0f));
 
@@ -220,14 +223,10 @@ void Graphics::Draw()
 	pSwapChain->Present(1u, 0);
 }
 
-void Graphics::Clear(float r, float g, float b, float a)
-{
-	/*	Dynamic clear
+
+
+void Graphics::Clear(float r, float g, float b, float a){
 	const float colour[] = { r, g, b, a };
-	pImmContext->ClearRenderTargetView(mRenderTargetView.Get(), colour);
-	pImmContext->ClearDepthStencilView(mDepthStencilView.Get(), 0, 1, 0);
-	*/
-	const float colour[] = { mClearColor.x, mClearColor.y, mClearColor.z, 1.0 };
 	pImmContext->ClearRenderTargetView(mRenderTargetView.Get(), colour);
 	pImmContext->ClearDepthStencilView(mDepthStencilView.Get(), 0, 1, 0);
 }
@@ -384,6 +383,9 @@ void Graphics::CreateGUI()
 
 void Graphics::InitGeoBuffers()
 {
+	/*Actor a;
+	a.mGeometry = Geometry::Cube;
+	Vertex *verts = &a.mGeometry.vertices[0];*/
 	//Declare geometry vertices in local space
 	Vertex verts[] =
 	{
@@ -434,12 +436,16 @@ void Graphics::InitGeoBuffers()
 		4, 6, 5,	4, 7, 6, //Top Face
 	};
 
+	
+	//UINT *indices = &a.mGeometry.indices[0];
+	
+
 	//mIndexCount = sizeof(indices);
 
 	//Creating an index buffer Description
 	D3D11_BUFFER_DESC ibd;
 	ibd.Usage = D3D11_USAGE_DEFAULT;
-	ibd.ByteWidth = static_cast<UINT>(sizeof(UINT) * std::size(indices));
+	ibd.ByteWidth = sizeof(indices) * 8;
 	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	ibd.CPUAccessFlags = 0;
 	ibd.MiscFlags = 0;
@@ -462,9 +468,10 @@ void Graphics::InitShaders()
 {
 	//Blob for our Shaders
 	wrl::ComPtr<ID3DBlob> pBlob;
-
+	ID3DX11Effect* pEffect = nullptr;
 	//Loading our pixel shader, and binding it to the pipeline
 	wrl::ComPtr<ID3D11PixelShader> pPixelShader;
+	//D3DX11CompileEffectFromFile(L"Basic.fx", null, null, null, D3DCOMPILE_DEBUG, pDevice.GetAddressOf(), &pEffect, pBlob)
 	D3DReadFileToBlob(L"PixelShader.cso", &pBlob);
 
 	pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &pPixelShader);
@@ -493,7 +500,6 @@ void Graphics::InitShaders()
 
 void Graphics::InitConstBuffers()
 {
-	//A simple constant buffer, that just stores the world matrix.
 	struct ConstantBuffer {
 		XMMATRIX mWorldView;
 	};
